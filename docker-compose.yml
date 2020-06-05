@@ -1,0 +1,18 @@
+version: '3.1'
+
+services:
+  argos4j-cli:
+    build:
+      context: .
+    volumes:
+      - ./workspace:/workspace/
+    environment:
+      - WORKSPACE=/workspace
+      - ARGOS_SERVICE_BASE_URL=http://192.168.2.2:8080/api
+      - CREDENTIALS_PASSPHRASE=mbMxyqjL6Ylt4O
+      - CREDENTIALS_KEY_ID=d9c36fa06f725d997659839823be42e18fc580ea7efbc84f89c4d9d5cf9e04c5
+      - SUPPLY_CHAIN_NAME=argos-test-app
+      - SUPPLY_CHAIN_PATH=com.rabobank
+    command: sleep infinity
+    working_dir: /usr/local/lib/bin
+    network_mode: "host"
