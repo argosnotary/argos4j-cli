@@ -39,7 +39,7 @@ import java.util.List;
 import java.util.concurrent.Callable;
 
 @Command(
-        name = "wrap",
+        name = "argos-collector",
         description = "collect artifacts from local workspace and send to argos service"
 )
 @Slf4j
@@ -87,8 +87,8 @@ public class ArgosClientCommand implements Callable<Boolean> {
 
     private void sendLinkToArgosService(List<Artifact> materials, List<Artifact> products) {
         log.info("posting link to argos service ");
-        log.info("used materials " + materials);
-        log.info("used products " + products);
+        log.debug("used materials " + materials);
+        log.debug("used products " + products);
         Link link = Link.builder().runId(runId)
                 .materials(materials)
                 .products(products)
@@ -102,7 +102,7 @@ public class ArgosClientCommand implements Callable<Boolean> {
     private List<Artifact> createProducts() {
         FileCollector collector = createFileCollector();
         List<Artifact> artifacts = ArtifactCollectorFactory.build(collector).collect();
-        log.info("created products " + artifacts);
+        log.info("created products ");
         return artifacts;
     }
 
@@ -110,7 +110,7 @@ public class ArgosClientCommand implements Callable<Boolean> {
     private void createMaterials() throws URISyntaxException, IOException {
         FileCollector collector = createFileCollector();
         List<Artifact> artifacts = ArtifactCollectorFactory.build(collector).collect();
-        log.info("created materials " + artifacts);
+        log.info("created materials ");
         Link link = Link.builder()
                 .runId(runId)
                 .materials(artifacts)
