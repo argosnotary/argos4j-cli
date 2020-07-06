@@ -134,7 +134,7 @@
                     <failIfMissing>true</failIfMissing>
                     <strictCheck>true</strictCheck>
                     <aggregate>false</aggregate>
-                    <header>https://raw.github.com/argosnotary/argos-parent/master/docs/header.txt</header>
+                    <header>https://raw.github.com/argosnotary/argos/master/docs/header.txt</header>
                     <excludes>
                         <exclude>target/**</exclude>
                     </excludes>
