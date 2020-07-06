@@ -17,21 +17,20 @@
 version: '3.1'
 
 services:
-  argosbuild-with-argos-wrapper:
-    container_name:  argosbuild-with-argos-wrapper
+  argos4j-cli:
+    container_name:  argos4j-cli
 
     build:
       context: .
-      dockerfile: ArgosBuildWithArgosWrapper
     volumes:
       - ./workspace:/workspace/
     environment:
       - WORKSPACE=/workspace
       - ARGOS_SERVICE_BASE_URL=http://192.168.2.2:8080/api
-      - CREDENTIALS_PASSPHRASE=mbMxyqjL6Ylt4O
-      - CREDENTIALS_KEY_ID=d9c36fa06f725d997659839823be42e18fc580ea7efbc84f89c4d9d5cf9e04c5
+      - CREDENTIALS_PASSPHRASE=VCkJUYVyUimQzO
+      - CREDENTIALS_KEY_ID=f39a69bc7b4b8eaf9b2f080f3df873b5f2505320280209e05d04dade6cb2dc3f
       - SUPPLY_CHAIN_NAME=argos-test-app
-      - SUPPLY_CHAIN_PATH=com.rabobank
+      - SUPPLY_CHAIN_PATH=com.rabo
     command: sleep infinity
     working_dir: /usr/local/lib/bin
     network_mode: "host"
