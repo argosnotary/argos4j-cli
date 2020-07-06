@@ -137,9 +137,10 @@
                     <header>https://raw.github.com/argosnotary/argos/master/docs/header.txt</header>
                     <excludes>
                         <exclude>target/**</exclude>
-                        <exclude>workspace/**</exclude>
                         <exclude>drone.yml</exclude>
+                        <exclude>workspace/**</exclude>
                         <exclude>**/*.txt</exclude>
+
                     </excludes>
                     <useDefaultExcludes>true</useDefaultExcludes>
                     <properties>
@@ -149,6 +150,8 @@
                     <mapping>
                         <java>SLASHSTAR_STYLE</java>
                         <Dockerfile>SCRIPT_STYLE</Dockerfile>
+                        <ArgosBuildWithArgosWrapper>SCRIPT_STYLE</ArgosBuildWithArgosWrapper>
+                        <plantuml>APOSTROPHE_STYLE</plantuml>
                     </mapping>
                 </configuration>
                 <executions>
