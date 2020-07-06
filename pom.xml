@@ -140,7 +140,6 @@
                         <exclude>drone.yml</exclude>
                         <exclude>workspace/**</exclude>
                         <exclude>**/*.txt</exclude>
-
                     </excludes>
                     <useDefaultExcludes>true</useDefaultExcludes>
                     <properties>
@@ -151,7 +150,7 @@
                         <java>SLASHSTAR_STYLE</java>
                         <Dockerfile>SCRIPT_STYLE</Dockerfile>
                         <ArgosBuildWithArgosWrapper>SCRIPT_STYLE</ArgosBuildWithArgosWrapper>
-                        <plantuml>APOSTROPHE_STYLE</plantuml>
+                        <proterties>SCRIPT_STYLE</proterties>
                     </mapping>
                 </configuration>
                 <executions>
