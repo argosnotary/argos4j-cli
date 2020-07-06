@@ -1,7 +1,7 @@
 ---
 kind: pipeline
 type: docker
-name: argosbuild
+name: argos-cli-build
 
 platform:
   os: linux
@@ -15,3 +15,5 @@ steps:
     volumes:
       - name: mvn_cache
         path: /root/.m2/repository
+
+
