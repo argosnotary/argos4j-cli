@@ -14,6 +14,6 @@
 # limitations under the License.
 #
 
-FROM argos4jcli_argos4j-cli:latest as argosWrapper
+FROM argosnotary/argos4j-cli-snapshot:latest as argosWrapper
 FROM argosnotary/argos-build:3.6.3
 COPY --from=argosWrapper /usr/local/lib /usr/local/lib

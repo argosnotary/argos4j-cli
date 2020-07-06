@@ -16,4 +16,106 @@ steps:
       - name: mvn_cache
         path: /root/.m2/repository
 
+  -name: sonar
+    image: argosnotary/argos-build:3.6.3
+    commands:
+      - mvn -q -e verify sonar:sonar -Psonar -Dsonar.projectKey=argosnotary_argos4j-cli -Dsonar.organization=argosnotary -Dsonar.host.url=https://sonarcloud.io -Dsonar.login=$SONAR_LOGIN
+    environment:
+      SONAR_LOGIN:
+        from_secret: sonar_login
+    volumes:
+      - name: mvn_cache
+        path: /root/.m2/repository
+    depends_on:
+      - build
 
+  - name: build argos-cli docker
+    image: plugins/docker
+    settings:
+      dockerfile:
+      password:
+        from_secret: docker_login_token
+      repo: argosnotary/argos4j-cli-snapshot
+      tags: ${DRONE_TAG:-${DRONE_BRANCH//\//_}}
+      username:
+        from_secret: docker_login_user
+    depends_on:
+        - sonar
+
+  - name: build argos-cli argos build docker
+      image: plugins/docker
+      settings:
+        dockerfile: ArgosBuildWithArgosWrapper
+        password:
+          from_secret: docker_login_token
+        repo: argosnotary/argos4j-cli-argos-build snapshot
+        tags: ${DRONE_TAG:-${DRONE_BRANCH//\//_}}
+        username:
+          from_secret: docker_login_user
+      depends_on:
+        - sonar
+
+  - name: release argos4j-cli image
+    image: plugins/docker
+    settings:
+      tags:
+        - ${DRONE_TAG}
+        - latest
+      build_args:
+        - VERSION=${DRONE_TAG}
+
+      dockerfile: Dockerfile
+      password:
+        from_secret: docker_login_token
+      repo: argosnotary/argos-service
+      username:
+        from_secret: docker_login_user
+    when:
+      event:
+        - tag
+    depends_on:
+      - sonar
+
+  - name: sign artifacts
+      image: plugins/gpgsign
+      settings:
+        detach_sign: true
+        files:
+          - target/*.jar
+          - target/pom.xml
+        key:
+          from_secret: argos-signing-private-key
+        passphrase:
+          from_secret: argos-signing-private-key-passphrase
+      depends_on:
+        - sonar
+        -
+  - name: deploy release to sonatype
+      image: argosnotary/argos-build:latest
+      commands:
+        - mvn -q -f pom.xml deploy:deploy-file -Durl=https://oss.sonatype.org/service/local/staging/deploy/maven2/
+      environment:
+        ossrh_password:
+          from_secret: ossrh_login_password
+        ossrh_username:
+          from_secret: ossrh_login_user
+      volumes:
+        - name: mvn_cache
+          path: /root/.m2/repository
+      when:
+        event:
+          - tag
+      depends_on:
+        - sign artifacts
+
+  - name: slack on success
+      image: plugins/slack
+      settings:
+        webhook:
+          from_secret: slack_webhook
+      depends_on:
+        - deploy release to sonatype
+
+volumes:
+  - name: mvn_cache
+    temp: {}
