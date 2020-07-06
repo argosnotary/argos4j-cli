@@ -137,6 +137,8 @@
                     <header>https://raw.github.com/argosnotary/argos/master/docs/header.txt</header>
                     <excludes>
                         <exclude>target/**</exclude>
+                        <exclude>drone.yml</exclude>
+                        <exclude>**/*.txt</exclude>
                     </excludes>
                     <useDefaultExcludes>true</useDefaultExcludes>
                     <properties>
