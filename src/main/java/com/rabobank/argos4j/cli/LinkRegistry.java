@@ -1,4 +1,4 @@
-package com.rabobank.argos4j.cli;/*
+/*
  * Copyright (C) 2019 - 2020 Rabobank Nederland
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,6 +13,7 @@ package com.rabobank.argos4j.cli;/*
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package com.rabobank.argos4j.cli;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.rabobank.argos.argos4j.Argos4jError;
 import com.rabobank.argos.argos4j.Argos4jSettings;

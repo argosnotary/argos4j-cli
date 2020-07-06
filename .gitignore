@@ -1,6 +1,7 @@
 **/.classpath
 **/.project
 **/.settings/
+**/workspace/
 **/target/
 /.idea/
 *.iml
