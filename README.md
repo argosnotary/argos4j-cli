@@ -2,7 +2,7 @@ ARGOS argos4j-cli [![Build Status](https://cloud.drone.io/api/badges/argosnotary
 ============
 cli based argos4j and docker cli container
 ## Useage
-```
+```shell
 services:
   argos4j-cli:
     container_name:  argos4j-cli
@@ -21,6 +21,6 @@ services:
     command: sleep infinity
     working_dir: /usr/local/lib/bin
     network_mode: "host"
-    ```
+    shell```
 
 
