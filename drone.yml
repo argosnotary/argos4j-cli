@@ -64,37 +64,37 @@ steps:
       - sonar
 
   - name: build argos-build image with argos-cli docker
-      image: plugins/docker
-      settings:
-        dockerfile: ArgosBuildWithArgosWrapper
-        password:
-          from_secret: docker_login_token
-        repo: argosnotary/argosbuild-argos4j-cli-snapshot
-        tags: ${DRONE_TAG:-${DRONE_BRANCH//\//_}}
-        username:
-          from_secret: docker_login_user
-      depends_on:
+    image: plugins/docker
+    settings:
+      dockerfile: ArgosBuildWithArgosWrapper
+      password:
+        from_secret: docker_login_token
+      repo: argosnotary/argosbuild-argos4j-cli-snapshot
+      tags: ${DRONE_TAG:-${DRONE_BRANCH//\//_}}
+      username:
+        from_secret: docker_login_user
+    depends_on:
         - release argos4j-cli image
-        -
+
   - name: release argos-build image with argos-cli
-        image: plugins/docker
-      settings:
-        dockerfile: ArgosBuildWithArgosWrapper
-        tags:
-          - ${DRONE_TAG}
-          - latest
-        build_args:
-          - VERSION=${DRONE_TAG}
-        password:
-          from_secret: docker_login_token
-        repo: argosnotary/argosbuild-argos4j-cli
-        username:
-          from_secret: docker_login_user
-      when:
-        event:
-          - tag
-      depends_on:
-        - release argos4j-cli image
+    image: plugins/docker
+    settings:
+      dockerfile: ArgosBuildWithArgosWrapper
+      tags:
+        - ${DRONE_TAG}
+        - latest
+      build_args:
+        - VERSION=${DRONE_TAG}
+      password:
+        from_secret: docker_login_token
+      repo: argosnotary/argosbuild-argos4j-cli
+      username:
+        from_secret: docker_login_user
+    when:
+      event:
+        - tag
+    depends_on:
+      - release argos4j-cli image
 
   - name: slack on success
     image: plugins/slack
