@@ -48,7 +48,7 @@ public class PostLinkCommand implements Callable<Boolean> {
 
     private static final String PRE = "pre";
     private static final String POST = "post";
-    private Properties properties = Properties.getInstance();
+    private final Properties properties = Properties.getInstance();
 
     @Option(names = {"-r", "--runId"}, description = "unique runid of the pipeline run", required = true)
     private String runId;
@@ -108,7 +108,7 @@ public class PostLinkCommand implements Callable<Boolean> {
     }
 
 
-    private void createMaterials() throws URISyntaxException, IOException {
+    private void createMaterials() throws IOException {
         FileCollector collector = createFileCollector();
         List<Artifact> artifacts = ArtifactCollectorFactory.build(collector).collect();
         log.info("created materials ");
