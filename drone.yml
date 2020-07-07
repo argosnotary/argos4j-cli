@@ -70,7 +70,8 @@ steps:
       webhook:
         from_secret: slack_webhook
     depends_on:
-      - deploy release to sonatype
+      - build argos-cli docker
+      - release argos4j-cli image
 
 volumes:
   - name: mvn_cache
