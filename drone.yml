@@ -11,7 +11,7 @@ steps:
   - name: build
     image: argosnotary/argos-build:3.6.3
     commands:
-      - mvn -q clean install
+      - mvn -q install
     volumes:
       - name: mvn_cache
         path: /root/.m2/repository
