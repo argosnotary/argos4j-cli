@@ -13,7 +13,9 @@ This is illustrated in the project example ArgosBuildWithArgosWrapper docker fil
     RUN cd /usr/bin && ln -s /usr/local/lib/argos/bin/postLink
 ```
 
-In the example above the docker argos4j-cli is fetched from the dockerhub repository and used in the build image of argos notary.this
+In the example above the docker argos4j-cli is fetched from the dockerhub repository and used in the build image of argos notary.
+The argos4j-cli docker image contains a sh or bat script to use  located in /usr/local/lib/argos.
+The executable script is called postLink the last command is used to create a soft link so it can be called without the path.
 
 The following docker environment variables can be used in any build step to connect to an argosnotary service instance.
 
