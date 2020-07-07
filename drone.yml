@@ -42,6 +42,7 @@ steps:
     depends_on:
         - sonar
 
+
   - name: release argos4j-cli image
     image: plugins/docker
     settings:
