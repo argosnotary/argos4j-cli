@@ -62,9 +62,7 @@ class LinkRegistry {
     }
 
     private static String createFileName(String runId, String segmentName, String stepName) throws URISyntaxException {
-        Path basePath = Paths.get(
-                LinkRegistry.class.getProtectionDomain().getCodeSource().getLocation().toURI())
-                .getParent().toAbsolutePath();
+        Path basePath = Path.of(properties.getWorkspace());
         return basePath.toString() +
                 "/" +
                 properties.getKeyId() + "-" +
@@ -73,7 +71,7 @@ class LinkRegistry {
                 runId + "-" +
                 segmentName + "-" +
                 stepName +
-                "-link.json";
+                ".link";
     }
 
     private static Argos4jSettings createArgosSettings() {

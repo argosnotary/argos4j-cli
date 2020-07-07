@@ -76,6 +76,7 @@
         <slf4j.version>1.7.6</slf4j.version>
         <commons-codec.version>1.11</commons-codec.version>
         <commons-io.version>2.6</commons-io.version>
+        <junit-jupiter.version>5.5.2</junit-jupiter.version>
     </properties>
     <dependencies>
         <dependency>
@@ -118,6 +119,38 @@
             <artifactId>commons-io</artifactId>
             <version>${commons-io.version}</version>
         </dependency>
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter</artifactId>
+            <version>${junit-jupiter.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-params</artifactId>
+            <version>${junit-jupiter.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.github.tomakehurst</groupId>
+            <artifactId>wiremock</artifactId>
+            <version>2.25.0</version>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-lang3</artifactId>
+            <version>3.10</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.hamcrest</groupId>
+            <artifactId>hamcrest-library</artifactId>
+            <version>2.2</version>
+            <scope>test</scope>
+        </dependency>
+
     </dependencies>
     <build>
         <plugins>
@@ -162,67 +195,15 @@
                         <configuration>
                             <programs>
                                 <program>
-                                    <mainClass>com.rabobank.argos4j.cli.ArgosClientCommand</mainClass>
-                                    <id>argos4j</id>
+                                    <mainClass>com.rabobank.argos4j.cli.PostLinkCommand</mainClass>
+                                    <id>postLink</id>
                                 </program>
                             </programs>
                         </configuration>
                     </execution>
                 </executions>
             </plugin>
-            <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>xml-maven-plugin</artifactId>
-                <version>1.0.2</version>
-                <executions>
-                    <execution>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>transform</goal>
-                        </goals>
-                    </execution>
-                </executions>
-                <configuration>
-                    <transformationSets>
-                        <transformationSet>
-                            <dir>${project.basedir}</dir>
-                            <includes>pom.xml</includes>
-                            <stylesheet>${project.basedir}/remove-dependencies.xsl</stylesheet>
-                            <outputDir>${project.build.directory}</outputDir>
-                        </transformationSet>
-                    </transformationSets>
-                </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-source-plugin</artifactId>
-                <version>3.2.0</version>
-                <executions>
-                    <execution>
-                        <id>attach-sources</id>
-                        <goals>
-                            <goal>jar</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-javadoc-plugin</artifactId>
-                <version>3.1.1</version>
-                <executions>
-                    <execution>
-                        <id>attach-javadocs</id>
-                        <goals>
-                            <goal>jar</goal>
-                        </goals>
-                        <configuration>
-                            <quiet>true</quiet>
 
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
             <plugin>
                 <groupId>com.mycila</groupId>
                 <artifactId>license-maven-plugin</artifactId>
@@ -259,26 +240,7 @@
                 </executions>
             </plugin>
 
-            <plugin>
-                <artifactId>maven-deploy-plugin</artifactId>
-                <version>3.0.0-M1</version>
-                <configuration>
-                    <repositoryId>ossrh</repositoryId>
-                    <file>${project.build.directory}/${project.build.finalName}.jar</file>
-                    <groupId>${project.groupId}</groupId>
-                    <artifactId>${project.artifactId}</artifactId>
-                    <version>${project.version}</version>
-                    <packaging>jar</packaging>
-                    <pomFile>${project.build.directory}/pom.xml</pomFile>
-                    <files>
-                        ${project.build.directory}/${project.build.finalName}.jar.asc,${project.build.directory}/${project.build.finalName}-sources.jar.asc,${project.build.directory}/${project.build.finalName}-javadoc.jar.asc,${project.build.directory}/pom.xml.asc
-                    </files>
-                    <types>jar.asc,jar.asc,jar.asc,pom.asc</types>
-                    <classifiers>,sources,javadoc,</classifiers>
-                    <sources>${project.build.directory}/${project.build.finalName}-sources.jar</sources>
-                    <javadoc>${project.build.directory}/${project.build.finalName}-javadoc.jar</javadoc>
-                </configuration>
-            </plugin>
+
         </plugins>
     </build>
     <profiles>

@@ -44,7 +44,7 @@ import java.util.concurrent.Callable;
         description = "collect artifacts from local workspace and send to argos service"
 )
 @Slf4j
-public class ArgosClientCommand implements Callable<Boolean> {
+public class PostLinkCommand implements Callable<Boolean> {
 
     private static final String PRE = "pre";
     private static final String POST = "post";
@@ -56,14 +56,14 @@ public class ArgosClientCommand implements Callable<Boolean> {
     private String stepName;
     @Option(names = {"-ls", "--segment"}, description = "the segmentname of the wrapped pipeline step", required = true)
     private String layoutSegmentName;
-    @Option(names = {"-p", "--phase"}, description = PRE + "," + POST, required = true)
+    @Option(names = {"-p", "--phase"}, description = PRE + "," + POST)
     private String phase = PRE;
 
     private Argos4jSettings argos4jSettings;
 
     public static void main(String[] args) {
         BasicConfigurator.configure();
-        new CommandLine(new ArgosClientCommand()).execute(args);
+        new CommandLine(new PostLinkCommand()).execute(args);
     }
 
     public Boolean call() throws Exception {
@@ -125,6 +125,7 @@ public class ArgosClientCommand implements Callable<Boolean> {
         return LocalFileCollector.builder()
                 .basePath(path)
                 .path(path)
+                .excludePatterns("{**.git/**,**.git\\**,**.link}")
                 .build();
     }
 }
