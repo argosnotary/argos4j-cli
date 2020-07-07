@@ -28,9 +28,10 @@ Commands can then be wrapped to collect materials and products and send sent lin
        - mvn -s settings.xml install
        - postLink --phase post --segment jenkins --step build --runId $RUN_ID
 
-The first command before the build command (--phase pre)  is used to make a snapshot of the pipeline workspace before the main command is executed
+The first command before the build command (--phase pre)  is used to make a snapshot of the pipeline workspace before the main command is executed.
 It collects the materials and stores a signed link in the workspace.
-The second command (--phase post)  is executed after the main command, makes a new snapshot of the workspace and sends the stored link file to the argos service.
+
+The second command (--phase post)  is executed after the main command, it makes a new snapshot of the workspace and sends the stored link file to the argos service.
 
 Complete example for drone ci:
 
