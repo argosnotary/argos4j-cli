@@ -75,6 +75,9 @@ steps:
         from_secret: docker_login_user
     depends_on:
         - release argos4j-cli image
+    when:
+      event:
+        - tag
 
   - name: release argos-build image with argos-cli
     image: plugins/docker
@@ -104,6 +107,8 @@ steps:
     depends_on:
       - build argos-cli docker
       - release argos4j-cli image
+      - build argos-build image with argos-cli docker
+      - release argos-build image with argos-cli
 
 volumes:
   - name: mvn_cache

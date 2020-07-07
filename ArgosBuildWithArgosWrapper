@@ -15,6 +15,6 @@
 #
 
 FROM argosnotary/argos4j-cli:latest as argosWrapper
-FROM argosnotary/argos-build:3.6.3
+FROM argosnotary/argos-build:latest
 COPY --from=argosWrapper /usr/local/lib/argos /usr/local/lib/argos
 RUN cd /usr/bin && ln -s /usr/local/lib/argos/bin/postLink
