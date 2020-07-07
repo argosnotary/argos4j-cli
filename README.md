@@ -11,7 +11,8 @@ This is illustrated in the project example ArgosBuildWithArgosWrapper docker fil
     RUN cd /usr/bin && ln -s /usr/local/lib/argos/bin/postLink
 
 In the example above the docker argos4j-cli is fetched from the dockerhub repository and used in the build image of argos notary.this
-The following docker environment variables can be used in any build step to connect to the argosnotary service.
+
+The following docker environment variables can be used in any build step to connect to an argosnotary service instance.
 
            WORKSPACE: the workspace of your ci cd pipeline setup eg "/drone/src"
            ARGOS_SERVICE_BASE_URL: the url of the argosnotary service eg "https://notary.argosnotary.org/api"
@@ -23,12 +24,15 @@ The following docker environment variables can be used in any build step to conn
 
 Commands can then be wrapped to collect materials and products and send sent link files to argosnotary.
 
-       -  postLink --phase pre --segment jenkins --step build --runId $RUN_ID
+       - postLink --phase pre --segment jenkins --step build --runId $RUN_ID
        - mvn -s settings.xml install
        - postLink --phase post --segment jenkins --step build --runId $RUN_ID
 
+The first command before the build command (--phase pre)  is used to make a snapshot of the pipeline workspace before the main command is executed
+It collects the materials and stores a signed link in the workspace.
+The second command (--phase post)  is executed after the main command, makes a new snapshot of the workspace and sends the stored link file to the argos service.
 
-Complete example for drone ci
+Complete example for drone ci:
 
        - name: build
          image:argosnotary/argosbuild-argos4j-cli:latest
