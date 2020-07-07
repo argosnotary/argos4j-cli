@@ -63,38 +63,6 @@ steps:
     depends_on:
       - sonar
 
-  - name: sign artifacts
-    image: plugins/gpgsign
-    settings:
-      detach_sign: true
-      files:
-        - target/*.jar
-         - target/pom.xml
-      key:
-        from_secret: argos-signing-private-key
-      passphrase:
-        from_secret: argos-signing-private-key-passphrase
-    depends_on:
-        - sonar
-
-  - name: deploy release to sonatype
-    image: argosnotary/argos-build:latest
-    commands:
-      - mvn -q -f pom.xml deploy:deploy-file -Durl=https://oss.sonatype.org/service/local/staging/deploy/maven2/
-    environment:
-      ossrh_password:
-        from_secret: ossrh_login_password
-      ossrh_username:
-        from_secret: ossrh_login_user
-    volumes:
-      - name: mvn_cache
-        path: /root/.m2/repository
-    when:
-      event:
-        - tag
-    depends_on:
-      - sign artifacts
-
   - name: slack on success
     image: plugins/slack
     settings:
