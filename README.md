@@ -5,10 +5,13 @@ cli based argos4j docker container
 You can use this docker base image in any docker multistage build image of choice this way you can "wrap" your build commands with argos4j cli.
 
 This is illustrated in the project example ArgosBuildWithArgosWrapper docker file ArgosBuildWithArgosWrapper.
+
+```
     FROM argosnotary/argos4j-cli:latest as argosWrapper
     FROM argosnotary/argos-build:latest
     COPY --from=argosWrapper /usr/local/lib/argos /usr/local/lib/argos
     RUN cd /usr/bin && ln -s /usr/local/lib/argos/bin/postLink
+```
 
 In the example above the docker argos4j-cli is fetched from the dockerhub repository and used in the build image of argos notary.this
 
