@@ -27,52 +27,45 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import static java.nio.charset.StandardCharsets.UTF_8;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.hasSize;
-import static org.hamcrest.core.Is.is;
 import java.io.File;
-import java.lang.reflect.Field;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Map;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.get;
 import static com.github.tomakehurst.wiremock.client.WireMock.noContent;
 import static com.github.tomakehurst.wiremock.client.WireMock.ok;
 import static com.github.tomakehurst.wiremock.client.WireMock.post;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
+import static com.rabobank.argos4j.cli.EnvHelper.updateEnv;
+import static com.rabobank.argos4j.cli.Properties.ARGOS_SERVICE_BASE_URL;
+import static com.rabobank.argos4j.cli.Properties.CREDENTIALS_KEY_ID;
+import static com.rabobank.argos4j.cli.Properties.CREDENTIALS_PASSPHRASE;
+import static com.rabobank.argos4j.cli.Properties.ENV_WORKSPACE;
+import static com.rabobank.argos4j.cli.Properties.SUPPLY_CHAIN_NAME;
+import static com.rabobank.argos4j.cli.Properties.SUPPLY_CHAIN_PATH;
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.apache.commons.lang3.reflect.FieldUtils.writeField;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.core.Is.is;
 
 class PostLinkCommandTest {
     private WireMockServer wireMockServer;
     private PostLinkCommand postLinkCommand;
     private String restKeyPairRest;
     private Properties properties = Properties.getInstance();
-    private static final String ARGOS_SERVICE_BASE_URL = "ARGOS_SERVICE_BASE_URL";
-    private static final String CREDENTIALS_PASSPHRASE ="CREDENTIALS_PASSPHRASE" ;
-    private static final String CREDENTIALS_KEY_ID = "CREDENTIALS_KEY_ID";
-    private static final String SUPPLY_CHAIN_PATH = "SUPPLY_CHAIN_PATH";
-    private static final String SUPPLY_CHAIN_NAME = "SUPPLY_CHAIN_NAME";
-    private static final String WORKSPACE = "WORKSPACE";
+
 
     @BeforeAll
-    static void initialize() throws ReflectiveOperationException {
-        updateEnv(ARGOS_SERVICE_BASE_URL,"http://localhost:2500/api");
-        updateEnv(CREDENTIALS_PASSPHRASE,"gBM1Q4sc3kh05E");
-        updateEnv(CREDENTIALS_KEY_ID,"c76bad3017abf6049a82d89eb2b5cac1ebdc1b772c26775d5032520427b8a7b3");
-        updateEnv(SUPPLY_CHAIN_PATH,"root.child");
-        updateEnv(SUPPLY_CHAIN_NAME,"supplyChainName");
-        updateEnv(WORKSPACE,"./workspace");
+    static void initialize() {
+        updateEnv(ARGOS_SERVICE_BASE_URL, "http://localhost:2500/api");
+        updateEnv(CREDENTIALS_PASSPHRASE, "gBM1Q4sc3kh05E");
+        updateEnv(CREDENTIALS_KEY_ID, "c76bad3017abf6049a82d89eb2b5cac1ebdc1b772c26775d5032520427b8a7b3");
+        updateEnv(SUPPLY_CHAIN_PATH, "root.child");
+        updateEnv(SUPPLY_CHAIN_NAME, "supplyChainName");
+        updateEnv(ENV_WORKSPACE, "./workspace");
     }
 
-    @SuppressWarnings({ "unchecked" })
-    static void updateEnv(String name, String val) throws ReflectiveOperationException {
-        Map<String, String> env = System.getenv();
-        Field field = env.getClass().getDeclaredField("m");
-        field.setAccessible(true);
-        ((Map<String, String>) field.get(env)).put(name, val);
-    }
 
     @SneakyThrows
     @BeforeEach

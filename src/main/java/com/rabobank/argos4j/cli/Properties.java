@@ -24,12 +24,12 @@ import static java.util.Arrays.asList;
 
 @Getter
 public class Properties {
-    private static final String ARGOS_SERVICE_BASE_URL = "ARGOS_SERVICE_BASE_URL";
-    private static final String CREDENTIALS_PASSPHRASE = "CREDENTIALS_PASSPHRASE";
-    private static final String CREDENTIALS_KEY_ID = "CREDENTIALS_KEY_ID";
-    private static final String SUPPLY_CHAIN_PATH = "SUPPLY_CHAIN_PATH";
-    private static final String SUPPLY_CHAIN_NAME = "SUPPLY_CHAIN_NAME";
-    private static final String ENV_WORKSPACE = "WORKSPACE";
+    static final String ARGOS_SERVICE_BASE_URL = "ARGOS_SERVICE_BASE_URL";
+    static final String CREDENTIALS_PASSPHRASE = "CREDENTIALS_PASSPHRASE";
+    static final String CREDENTIALS_KEY_ID = "CREDENTIALS_KEY_ID";
+    static final String SUPPLY_CHAIN_PATH = "SUPPLY_CHAIN_PATH";
+    static final String SUPPLY_CHAIN_NAME = "SUPPLY_CHAIN_NAME";
+    static final String ENV_WORKSPACE = "WORKSPACE";
     private static Properties INSTANCE;
     private String argosServiceBaseUrl;
     private String passPhrase;
@@ -49,7 +49,7 @@ public class Properties {
 
         Optional.ofNullable(System.getenv(ARGOS_SERVICE_BASE_URL))
                 .ifPresentOrElse(property -> argosServiceBaseUrl = property,
-                        () -> illegalArgumentException(CREDENTIALS_PASSPHRASE));
+                        () -> illegalArgumentException(ARGOS_SERVICE_BASE_URL));
 
         Optional.ofNullable(System.getenv(CREDENTIALS_PASSPHRASE))
                 .ifPresentOrElse(property -> passPhrase = property,
