@@ -26,5 +26,6 @@ RUN mvn -f /home/app/pom.xml clean package
 # Package stage
 #
 FROM openjdk:11-jre-slim
-COPY --from=build /home/app/target/** /usr/local/lib/
-RUN chmod -R 777 /usr/local/lib/
+COPY --from=build /home/app/target/** /usr/local/lib/argos/
+RUN chmod 777 /usr/local/lib/argos/bin/* \
+    && cd /usr/bin && ln -s /usr/local/lib/argos/bin/postLink

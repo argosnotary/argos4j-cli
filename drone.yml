@@ -1,0 +1,115 @@
+---
+kind: pipeline
+type: docker
+name: argos-cli-build
+
+platform:
+  os: linux
+  arch: amd64
+
+steps:
+  - name: build
+    image: argosnotary/argos-build:3.6.3
+    commands:
+      - mvn -q install
+    volumes:
+      - name: mvn_cache
+        path: /root/.m2/repository
+
+  - name: sonar
+    image: argosnotary/argos-build:3.6.3
+    commands:
+      - mvn -q -e verify sonar:sonar -Psonar -Dsonar.projectKey=argosnotary_argos4j-cli -Dsonar.organization=argosnotary -Dsonar.host.url=https://sonarcloud.io -Dsonar.login=$SONAR_LOGIN
+    environment:
+      SONAR_LOGIN:
+        from_secret: sonar_login
+    volumes:
+      - name: mvn_cache
+        path: /root/.m2/repository
+    depends_on:
+      - build
+
+  - name: build argos-cli docker
+    image: plugins/docker
+    settings:
+      dockerfile:
+      password:
+        from_secret: docker_login_token
+      repo: argosnotary/argos4j-cli-snapshot
+      tags: ${DRONE_TAG:-${DRONE_BRANCH//\//_}}
+      username:
+        from_secret: docker_login_user
+    depends_on:
+        - sonar
+
+  - name: release argos4j-cli image
+    image: plugins/docker
+    settings:
+      tags:
+        - ${DRONE_TAG}
+        - latest
+      build_args:
+        - VERSION=${DRONE_TAG}
+
+      dockerfile: Dockerfile
+      password:
+        from_secret: docker_login_token
+      repo: argosnotary/argos4j-cli
+      username:
+        from_secret: docker_login_user
+    when:
+      event:
+        - tag
+    depends_on:
+      - sonar
+
+  - name: build argos-build image with argos-cli docker
+    image: plugins/docker
+    settings:
+      dockerfile: ArgosBuildWithArgosWrapper
+      password:
+        from_secret: docker_login_token
+      repo: argosnotary/argosbuild-argos4j-cli-snapshot
+      tags: ${DRONE_TAG:-${DRONE_BRANCH//\//_}}
+      username:
+        from_secret: docker_login_user
+    depends_on:
+        - release argos4j-cli image
+    when:
+      event:
+        - tag
+
+  - name: release argos-build image with argos-cli
+    image: plugins/docker
+    settings:
+      dockerfile: ArgosBuildWithArgosWrapper
+      tags:
+        - ${DRONE_TAG}
+        - latest
+      build_args:
+        - VERSION=${DRONE_TAG}
+      password:
+        from_secret: docker_login_token
+      repo: argosnotary/argosbuild-argos4j-cli
+      username:
+        from_secret: docker_login_user
+    when:
+      event:
+        - tag
+    depends_on:
+      - release argos4j-cli image
+
+  - name: slack on success
+    image: plugins/slack
+    settings:
+      webhook:
+        from_secret: slack_webhook
+    depends_on:
+      - build argos-cli docker
+      - release argos4j-cli image
+      - build argos-build image with argos-cli docker
+      - release argos-build image with argos-cli
+
+volumes:
+  - name: mvn_cache
+    temp: {}

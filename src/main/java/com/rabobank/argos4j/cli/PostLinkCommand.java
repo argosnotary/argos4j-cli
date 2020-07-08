@@ -1,4 +1,4 @@
-package com.rabobank.argos4j.cli;/*
+/*
  * Copyright (C) 2019 - 2020 Rabobank Nederland
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,6 +13,7 @@ package com.rabobank.argos4j.cli;/*
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package com.rabobank.argos4j.cli;
 
 import com.rabobank.argos.argos4j.Argos4jSettings;
 import com.rabobank.argos.argos4j.FileCollector;
@@ -39,15 +40,15 @@ import java.util.List;
 import java.util.concurrent.Callable;
 
 @Command(
-        name = "wrap",
+        name = "argos-collector",
         description = "collect artifacts from local workspace and send to argos service"
 )
 @Slf4j
-public class ArgosClientCommand implements Callable<Boolean> {
+public class PostLinkCommand implements Callable<Boolean> {
 
     private static final String PRE = "pre";
     private static final String POST = "post";
-    private Properties properties = Properties.getInstance();
+    private final Properties properties = Properties.getInstance();
 
     @Option(names = {"-r", "--runId"}, description = "unique runid of the pipeline run", required = true)
     private String runId;
@@ -55,14 +56,14 @@ public class ArgosClientCommand implements Callable<Boolean> {
     private String stepName;
     @Option(names = {"-ls", "--segment"}, description = "the segmentname of the wrapped pipeline step", required = true)
     private String layoutSegmentName;
-    @Option(names = {"-p", "--phase"}, description = PRE + "," + POST, required = true)
+    @Option(names = {"-p", "--phase"}, description = PRE + "," + POST)
     private String phase = PRE;
 
     private Argos4jSettings argos4jSettings;
 
     public static void main(String[] args) {
         BasicConfigurator.configure();
-        new CommandLine(new ArgosClientCommand()).execute(args);
+        new CommandLine(new PostLinkCommand()).execute(args);
     }
 
     public Boolean call() throws Exception {
@@ -87,8 +88,8 @@ public class ArgosClientCommand implements Callable<Boolean> {
 
     private void sendLinkToArgosService(List<Artifact> materials, List<Artifact> products) {
         log.info("posting link to argos service ");
-        log.info("used materials " + materials);
-        log.info("used products " + products);
+        log.debug("used materials " + materials);
+        log.debug("used products " + products);
         Link link = Link.builder().runId(runId)
                 .materials(materials)
                 .products(products)
@@ -102,15 +103,15 @@ public class ArgosClientCommand implements Callable<Boolean> {
     private List<Artifact> createProducts() {
         FileCollector collector = createFileCollector();
         List<Artifact> artifacts = ArtifactCollectorFactory.build(collector).collect();
-        log.info("created products " + artifacts);
+        log.info("created products ");
         return artifacts;
     }
 
 
-    private void createMaterials() throws URISyntaxException, IOException {
+    private void createMaterials() throws IOException {
         FileCollector collector = createFileCollector();
         List<Artifact> artifacts = ArtifactCollectorFactory.build(collector).collect();
-        log.info("created materials " + artifacts);
+        log.info("created materials ");
         Link link = Link.builder()
                 .runId(runId)
                 .materials(artifacts)
@@ -124,6 +125,7 @@ public class ArgosClientCommand implements Callable<Boolean> {
         return LocalFileCollector.builder()
                 .basePath(path)
                 .path(path)
+                .excludePatterns("{**.git/**,**.git\\**,**.link}")
                 .build();
     }
 }

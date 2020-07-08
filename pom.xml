@@ -20,51 +20,137 @@
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
+    <url>https://github.com/argosnotary/argos4j-cli</url>
 
+    <licenses>
+        <license>
+            <name>The Apache Software License, Version 2.0</name>
+            <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+        </license>
+    </licenses>
+
+    <developers>
+        <developer>
+            <name>Gerard Borst</name>
+            <email>gerard.borst@rabobank.nl</email>
+            <organization>Rabobank</organization>
+            <organizationUrl>https://www.rabobank.com</organizationUrl>
+        </developer>
+        <developer>
+            <name>Bart Kors</name>
+            <email>bart.kors@rabobank.nl</email>
+            <organization>Rabobank</organization>
+            <organizationUrl>https://www.rabobank.com</organizationUrl>
+        </developer>
+        <developer>
+            <name>Michel Durieux</name>
+            <email>michel.durieux@rabobank.nl</email>
+            <organization>Rabobank</organization>
+            <organizationUrl>https://www.rabobank.com</organizationUrl>
+        </developer>
+    </developers>
+
+    <scm>
+        <connection>scm:git:https://github.com/argosnotary/argos.git</connection>
+        <developerConnection>scm:git:https://github.com/argosnotary/argos.git</developerConnection>
+        <url>https://github.com/argosnotary/argos4j-cli/tree/master</url>
+    </scm>
+    <distributionManagement>
+        <snapshotRepository>
+            <id>ossrh</id>
+            <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+        </snapshotRepository>
+        <repository>
+            <id>ossrh</id>
+            <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+        </repository>
+    </distributionManagement>
     <groupId>com.rabobank.argos</groupId>
-    <artifactId>argos4jCLI</artifactId>
+    <artifactId>argos4j-cli</artifactId>
     <version>1.0-SNAPSHOT</version>
+    <properties>
+        <argos4j.version>0.0.1-RC8</argos4j.version>
+        <picocli.version>4.3.2</picocli.version>
+        <lombok.version>1.18.12</lombok.version>
+        <config.version>1.3.4</config.version>
+        <slf4j.version>1.7.6</slf4j.version>
+        <commons-codec.version>1.11</commons-codec.version>
+        <commons-io.version>2.6</commons-io.version>
+        <junit-jupiter.version>5.5.2</junit-jupiter.version>
+    </properties>
     <dependencies>
         <dependency>
             <groupId>com.rabobank.argos</groupId>
             <artifactId>argos4j</artifactId>
-            <version>0.0.1-RC5</version>
+            <version>${argos4j.version}</version>
         </dependency>
         <dependency>
             <groupId>info.picocli</groupId>
             <artifactId>picocli</artifactId>
-            <version>4.3.2</version>
+            <version>${picocli.version}</version>
         </dependency>
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
-            <version>1.18.12</version>
+            <version>${lombok.version}</version>
         </dependency>
         <dependency>
             <groupId>com.typesafe</groupId>
             <artifactId>config</artifactId>
-            <version>1.3.4</version>
+            <version>${config.version}</version>
         </dependency>
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
-            <version>1.7.6</version>
+            <version>${slf4j.version}</version>
         </dependency>
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-log4j12</artifactId>
-            <version>1.7.6</version>
+            <version>${slf4j.version}</version>
         </dependency>
         <dependency>
             <groupId>commons-codec</groupId>
             <artifactId>commons-codec</artifactId>
-            <version>1.11</version>
+            <version>${commons-codec.version}</version>
         </dependency>
         <dependency>
             <groupId>commons-io</groupId>
             <artifactId>commons-io</artifactId>
-            <version>2.6</version>
+            <version>${commons-io.version}</version>
         </dependency>
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter</artifactId>
+            <version>${junit-jupiter.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-params</artifactId>
+            <version>${junit-jupiter.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.github.tomakehurst</groupId>
+            <artifactId>wiremock</artifactId>
+            <version>2.25.0</version>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-lang3</artifactId>
+            <version>3.10</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.hamcrest</groupId>
+            <artifactId>hamcrest-library</artifactId>
+            <version>2.2</version>
+            <scope>test</scope>
+        </dependency>
+
     </dependencies>
     <build>
         <plugins>
@@ -75,17 +161,18 @@
                 <!-- annotationProcessorPaths requires maven-compiler-plugin version 3.5 or higher -->
                 <version>3.8.0</version>
                 <configuration>
-                    <release>11</release>
+                    <source>11</source>
+                    <target>11</target>
                     <annotationProcessorPaths>
                         <path>
                             <groupId>info.picocli</groupId>
                             <artifactId>picocli-codegen</artifactId>
-                            <version>4.3.2</version>
+                            <version>${picocli.version}</version>
                         </path>
                         <path>
                             <groupId>org.projectlombok</groupId>
                             <artifactId>lombok</artifactId>
-                            <version>1.18.10</version>
+                            <version>${lombok.version}</version>
                         </path>
                     </annotationProcessorPaths>
                     <compilerArgs>
@@ -108,14 +195,15 @@
                         <configuration>
                             <programs>
                                 <program>
-                                    <mainClass>com.rabobank.argos4j.cli.ArgosClientCommand</mainClass>
-                                    <id>argos4j</id>
+                                    <mainClass>com.rabobank.argos4j.cli.PostLinkCommand</mainClass>
+                                    <id>postLink</id>
                                 </program>
                             </programs>
                         </configuration>
                     </execution>
                 </executions>
             </plugin>
+
             <plugin>
                 <groupId>com.mycila</groupId>
                 <artifactId>license-maven-plugin</artifactId>
@@ -125,9 +213,12 @@
                     <failIfMissing>true</failIfMissing>
                     <strictCheck>true</strictCheck>
                     <aggregate>false</aggregate>
-                    <header>https://raw.github.com/argosnotary/argos-parent/master/docs/header.txt</header>
+                    <header>https://raw.github.com/argosnotary/argos/master/docs/header.txt</header>
                     <excludes>
                         <exclude>target/**</exclude>
+                        <exclude>drone.yml</exclude>
+                        <exclude>workspace/**</exclude>
+                        <exclude>**/*.properties</exclude>
                     </excludes>
                     <useDefaultExcludes>true</useDefaultExcludes>
                     <properties>
@@ -137,6 +228,7 @@
                     <mapping>
                         <java>SLASHSTAR_STYLE</java>
                         <Dockerfile>SCRIPT_STYLE</Dockerfile>
+                        <ArgosBuildWithArgosWrapper>SCRIPT_STYLE</ArgosBuildWithArgosWrapper>
                     </mapping>
                 </configuration>
                 <executions>
@@ -147,8 +239,43 @@
                     </execution>
                 </executions>
             </plugin>
+
+
         </plugins>
     </build>
-
-
+    <profiles>
+        <profile>
+            <id>sonar</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.jacoco</groupId>
+                        <artifactId>jacoco-maven-plugin</artifactId>
+                        <version>0.8.4</version>
+                        <executions>
+                            <execution>
+                                <id>reporting</id>
+                                <goals>
+                                    <goal>prepare-agent</goal>
+                                    <goal>report</goal>
+                                </goals>
+                            </execution>
+                            <execution>
+                                <id>default-report</id>
+                                <phase>prepare-package</phase>
+                                <goals>
+                                    <goal>report</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.sonarsource.scanner.maven</groupId>
+                        <artifactId>sonar-maven-plugin</artifactId>
+                        <version>3.6.1.1688</version>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
 </project>
