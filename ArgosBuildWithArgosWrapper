@@ -13,9 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-argos-service.rest-api.base-url=http://loc:8080/api
-supplychain.path=d
-supplychain.name=d
-supplychain.credentials.passphrase=d
-supplychain.credentials.keyid=d
-workspace=/Users/mdurieux/IdeaProjects/argos4jcli/workspace
+
+FROM argosnotary/argos4j-cli:latest as argosWrapper
+FROM argosnotary/argos-build:latest
+COPY --from=argosWrapper /usr/local/lib/argos /usr/local/lib/argos
+RUN cd /usr/bin && ln -s /usr/local/lib/argos/bin/postLink
