@@ -17,4 +17,12 @@ public class EnvHelper {
         field.setAccessible(true);
         ((Map<String, String>) field.get(env)).put(name, val);
     }
+
+    @SneakyThrows
+    static void removeEntry(String name) {
+        Map<String, String> env = System.getenv();
+        Field field = env.getClass().getDeclaredField("m");
+        field.setAccessible(true);
+        ((Map<String, String>) field.get(env)).remove(name);
+    }
 }

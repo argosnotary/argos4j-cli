@@ -23,7 +23,6 @@ import com.rabobank.argos.argos4j.rest.api.model.RestLinkMetaBlock;
 import lombok.SneakyThrows;
 import org.apache.commons.io.IOUtils;
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -36,6 +35,7 @@ import static com.github.tomakehurst.wiremock.client.WireMock.noContent;
 import static com.github.tomakehurst.wiremock.client.WireMock.ok;
 import static com.github.tomakehurst.wiremock.client.WireMock.post;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
+import static com.rabobank.argos4j.cli.EnvHelper.removeEntry;
 import static com.rabobank.argos4j.cli.EnvHelper.updateEnv;
 import static com.rabobank.argos4j.cli.Properties.ARGOS_SERVICE_BASE_URL;
 import static com.rabobank.argos4j.cli.Properties.CREDENTIALS_KEY_ID;
@@ -53,24 +53,20 @@ class PostLinkCommandTest {
     private WireMockServer wireMockServer;
     private PostLinkCommand postLinkCommand;
     private String restKeyPairRest;
-    private Properties properties = Properties.getInstance();
+    private Properties properties;
 
 
-    @BeforeAll
-    static void initialize() {
+
+    @SneakyThrows
+    @BeforeEach
+    void setUp() {
         updateEnv(ARGOS_SERVICE_BASE_URL, "http://localhost:2500/api");
         updateEnv(CREDENTIALS_PASSPHRASE, "gBM1Q4sc3kh05E");
         updateEnv(CREDENTIALS_KEY_ID, "c76bad3017abf6049a82d89eb2b5cac1ebdc1b772c26775d5032520427b8a7b3");
         updateEnv(SUPPLY_CHAIN_PATH, "root.child");
         updateEnv(SUPPLY_CHAIN_NAME, "supplyChainName");
         updateEnv(ENV_WORKSPACE, "./workspace");
-    }
-
-
-    @SneakyThrows
-    @BeforeEach
-    void setUp() {
-
+        properties = Properties.getInstance();
         RestKeyPair restKeyPair = new ObjectMapper().readValue(this.getClass().getResourceAsStream("/keypair.json"), RestKeyPair.class);
         restKeyPairRest = new ObjectMapper().writeValueAsString(restKeyPair);
         postLinkCommand = new PostLinkCommand();
@@ -88,6 +84,12 @@ class PostLinkCommandTest {
     @AfterEach
     public void teardown() {
         wireMockServer.stop();
+        removeEntry(ARGOS_SERVICE_BASE_URL);
+        removeEntry(CREDENTIALS_PASSPHRASE);
+        removeEntry(CREDENTIALS_KEY_ID);
+        removeEntry(SUPPLY_CHAIN_PATH);
+        removeEntry(SUPPLY_CHAIN_NAME);
+        removeEntry(ENV_WORKSPACE);
     }
     @SneakyThrows
     @Test
