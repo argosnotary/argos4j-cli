@@ -61,7 +61,7 @@ class PostLinkCommandTest {
     @BeforeEach
     void setUp() {
         updateEnv(ARGOS_SERVICE_BASE_URL, "http://localhost:2500/api");
-        updateEnv(CREDENTIALS_PASSPHRASE, "gBM1Q4sc3kh05E");
+        updateEnv(CREDENTIALS_PASSPHRASE, "test");
         updateEnv(CREDENTIALS_KEY_ID, "c76bad3017abf6049a82d89eb2b5cac1ebdc1b772c26775d5032520427b8a7b3");
         updateEnv(SUPPLY_CHAIN_PATH, "root.child");
         updateEnv(SUPPLY_CHAIN_NAME, "supplyChainName");
