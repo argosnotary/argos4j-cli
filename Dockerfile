@@ -14,18 +14,7 @@
 # limitations under the License.
 #
 
-#
-# Build stage
-#
-FROM maven:3.6.0-jdk-11-slim AS build
-COPY src /home/app/src
-COPY pom.xml /home/app
-RUN mvn -f /home/app/pom.xml clean package -Dmaven.test.skip=true
-
-#
-# Package stage
-#
 FROM openjdk:11-jre-slim
-COPY --from=build /home/app/target/** /usr/local/lib/argos/
-RUN chmod 777 /usr/local/lib/argos/bin/* \
-    && cd /usr/bin && ln -s /usr/local/lib/argos/bin/postLink
+COPY target/appassembler /usr/local/argos
+RUN chmod 777 /usr/local/argos/bin/* \
+    && cd /usr/bin && ln -s /usr/local/argos/bin/postLink
