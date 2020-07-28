@@ -31,13 +31,13 @@ import com.rabobank.argos.domain.link.LinkMetaBlock;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.log4j.BasicConfigurator;
 import org.mapstruct.factory.Mappers;
-
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
 
 import java.io.IOException;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.Callable;
@@ -125,7 +125,7 @@ public class PostLinkCommand implements Callable<Boolean> {
     }
 
     private FileCollector createFileCollector() {
-        Path path = Path.of(properties.getWorkspace());
+        Path path = Paths.get(properties.getWorkspace());
         return LocalFileCollector.builder()
                 .basePath(path)
                 .path(path)

@@ -64,7 +64,7 @@ class LinkRegistry {
     }
 
     private static String createFileName(String runId, String segmentName, String stepName)  {
-        Path basePath = Path.of(properties.getWorkspace());
+        Path basePath = Paths.get(properties.getWorkspace());
         return basePath.toString() +
                 "/" +
                 properties.getKeyId() + "-" +
