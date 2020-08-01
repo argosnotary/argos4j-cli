@@ -32,36 +32,18 @@ steps:
   - name: build argos-cli docker
     image: plugins/docker
     settings:
-      dockerfile:
+      dockerfile: Dockerfile
       password:
         from_secret: docker_login_token
       repo: argosnotary/argos4j-cli-snapshot
       tags: ${DRONE_TAG:-${DRONE_BRANCH//\//_}}
       username:
         from_secret: docker_login_user
-    depends_on:
-        - sonar
-
-  - name: release argos4j-cli image
-    image: plugins/docker
-    settings:
-      tags:
-        - ${DRONE_TAG}
-        - latest
-      build_args:
-        - VERSION=${DRONE_TAG}
-
-      dockerfile: Dockerfile
-      password:
-        from_secret: docker_login_token
-      repo: argosnotary/argos4j-cli
-      username:
-        from_secret: docker_login_user
     when:
       event:
-        - tag
+        - push
     depends_on:
-      - sonar
+        - sonar
 
   - name: build argos-build image with argos-cli docker
     image: plugins/docker
@@ -73,11 +55,31 @@ steps:
       tags: ${DRONE_TAG:-${DRONE_BRANCH//\//_}}
       username:
         from_secret: docker_login_user
+    when:
+      event:
+        - push
     depends_on:
-        - release argos4j-cli image
+        - sonar
+
+  - name: release argos4j-cli image
+    image: plugins/docker
+    settings:
+      tags:
+        - ${DRONE_TAG}
+        - latest
+      build_args:
+        - VERSION=${DRONE_TAG}
+      dockerfile: Dockerfile
+      password:
+        from_secret: docker_login_token
+      repo: argosnotary/argos4j-cli
+      username:
+        from_secret: docker_login_user
     when:
       event:
         - tag
+    depends_on:
+      - sonar
 
   - name: release argos-build image with argos-cli
     image: plugins/docker

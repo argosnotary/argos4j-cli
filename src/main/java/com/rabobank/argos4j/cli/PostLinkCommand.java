@@ -18,22 +18,26 @@ package com.rabobank.argos4j.cli;
 import com.rabobank.argos.argos4j.Argos4jSettings;
 import com.rabobank.argos.argos4j.FileCollector;
 import com.rabobank.argos.argos4j.LocalFileCollector;
-import com.rabobank.argos.argos4j.internal.Argos4JSigner;
 import com.rabobank.argos.argos4j.internal.ArgosServiceClient;
 import com.rabobank.argos.argos4j.internal.ArtifactCollectorFactory;
-import com.rabobank.argos.domain.Signature;
+import com.rabobank.argos.argos4j.internal.mapper.RestMapper;
+import com.rabobank.argos.domain.crypto.ServiceAccountKeyPair;
+import com.rabobank.argos.domain.crypto.Signature;
+import com.rabobank.argos.domain.crypto.signing.JsonSigningSerializer;
+import com.rabobank.argos.domain.crypto.signing.Signer;
 import com.rabobank.argos.domain.link.Artifact;
 import com.rabobank.argos.domain.link.Link;
 import com.rabobank.argos.domain.link.LinkMetaBlock;
-import com.rabobank.argos.domain.signing.JsonSigningSerializer;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.log4j.BasicConfigurator;
+import org.mapstruct.factory.Mappers;
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
 
 import java.io.IOException;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.Callable;
@@ -95,7 +99,8 @@ public class PostLinkCommand implements Callable<Boolean> {
                 .layoutSegmentName(layoutSegmentName)
                 .stepName(stepName).build();
         ArgosServiceClient argosServiceClient = new ArgosServiceClient(argos4jSettings, properties.getPassPhrase().toCharArray());
-        Signature signature = new Argos4JSigner().sign(argosServiceClient.getKeyPair(), properties.getPassPhrase().toCharArray(), new JsonSigningSerializer().serialize(link));
+        ServiceAccountKeyPair keyPair = Mappers.getMapper(RestMapper.class).convertFromRestServiceAccountKeyPair(argosServiceClient.getKeyPair());
+        Signature signature = Signer.sign(keyPair, properties.getPassPhrase().toCharArray(), new JsonSigningSerializer().serialize(link));
         argosServiceClient.uploadLinkMetaBlockToService(LinkMetaBlock.builder().link(link).signature(signature).build());
     }
 
@@ -120,7 +125,7 @@ public class PostLinkCommand implements Callable<Boolean> {
     }
 
     private FileCollector createFileCollector() {
-        Path path = Path.of(properties.getWorkspace());
+        Path path = Paths.get(properties.getWorkspace());
         return LocalFileCollector.builder()
                 .basePath(path)
                 .path(path)

@@ -61,7 +61,7 @@ class PostLinkCommandTest {
     @BeforeEach
     void setUp() {
         updateEnv(ARGOS_SERVICE_BASE_URL, "http://localhost:2500/api");
-        updateEnv(CREDENTIALS_PASSPHRASE, "gBM1Q4sc3kh05E");
+        updateEnv(CREDENTIALS_PASSPHRASE, "test");
         updateEnv(CREDENTIALS_KEY_ID, "c76bad3017abf6049a82d89eb2b5cac1ebdc1b772c26775d5032520427b8a7b3");
         updateEnv(SUPPLY_CHAIN_PATH, "root.child");
         updateEnv(SUPPLY_CHAIN_NAME, "supplyChainName");
@@ -95,8 +95,8 @@ class PostLinkCommandTest {
     @Test
     void callWithPhasePreShouldStoreSingedLinkOnFileSystem() {
         postLinkCommand.call();
-        Path basePath = Path.of(properties.getWorkspace());
-        String file = basePath.toString()+"/c76bad3017abf6049a82d89eb2b5cac1ebdc1b772c26775d5032520427b8a7b3-root-child-supplyChainName-runId-layoutSegmentName-stepName.link";
+        Path basePath = Paths.get(properties.getWorkspace());
+        String file = basePath.toString() + "/c76bad3017abf6049a82d89eb2b5cac1ebdc1b772c26775d5032520427b8a7b3-root-child-supplyChainName-runId-layoutSegmentName-stepName.link";
         assertThat(new File(file).exists(),is(true));
         String json = IOUtils.toString(Paths.get(file).toUri(), UTF_8);
         RestLinkMetaBlock restLinkMetaBlock  = new ObjectMapper().readValue(json, RestLinkMetaBlock.class);
@@ -113,8 +113,8 @@ class PostLinkCommandTest {
         writeField(postLinkCommand, "runId", "runId", true);
         writeField(postLinkCommand, "phase", "post", true);
         postLinkCommand.call();
-        Path basePath = Path.of(properties.getWorkspace());
-        String file = basePath.toString()+"/c76bad3017abf6049a82d89eb2b5cac1ebdc1b772c26775d5032520427b8a7b3-root-child-supplyChainName-runId-layoutSegmentName-stepName.link";
+        Path basePath = Paths.get(properties.getWorkspace());
+        String file = basePath.toString() + "/c76bad3017abf6049a82d89eb2b5cac1ebdc1b772c26775d5032520427b8a7b3-root-child-supplyChainName-runId-layoutSegmentName-stepName.link";
         assertThat(new File(file).exists(),is(false));
     }
 }

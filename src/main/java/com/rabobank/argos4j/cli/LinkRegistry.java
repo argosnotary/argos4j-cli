@@ -18,17 +18,18 @@ package com.rabobank.argos4j.cli;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.rabobank.argos.argos4j.Argos4jError;
 import com.rabobank.argos.argos4j.Argos4jSettings;
-import com.rabobank.argos.argos4j.internal.Argos4JSigner;
 import com.rabobank.argos.argos4j.internal.ArgosServiceClient;
 import com.rabobank.argos.argos4j.internal.mapper.RestMapper;
 import com.rabobank.argos.argos4j.rest.api.model.RestLinkMetaBlock;
 import com.rabobank.argos.argos4j.rest.api.model.RestServiceAccountKeyPair;
-import com.rabobank.argos.domain.Signature;
-import com.rabobank.argos.domain.key.RSAPublicKeyFactory;
+import com.rabobank.argos.domain.crypto.PublicKeyFactory;
+import com.rabobank.argos.domain.crypto.ServiceAccountKeyPair;
+import com.rabobank.argos.domain.crypto.Signature;
+import com.rabobank.argos.domain.crypto.signing.JsonSigningSerializer;
+import com.rabobank.argos.domain.crypto.signing.SignatureValidator;
+import com.rabobank.argos.domain.crypto.signing.Signer;
 import com.rabobank.argos.domain.link.Link;
 import com.rabobank.argos.domain.link.LinkMetaBlock;
-import com.rabobank.argos.domain.signing.JsonSigningSerializer;
-import com.rabobank.argos.domain.signing.SignatureValidator;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.mapstruct.factory.Mappers;
@@ -52,7 +53,8 @@ class LinkRegistry {
     static void storeLink(String runId, String segmentName, String stepName, Link link) throws  IOException {
         Argos4jSettings argos4jSettings = createArgosSettings();
         ArgosServiceClient argosServiceClient = new ArgosServiceClient(argos4jSettings, properties.getPassPhrase().toCharArray());
-        Signature signature = new Argos4JSigner().sign(argosServiceClient.getKeyPair(), properties.getPassPhrase().toCharArray(), new JsonSigningSerializer().serialize(link));
+        ServiceAccountKeyPair keyPair = Mappers.getMapper(RestMapper.class).convertFromRestServiceAccountKeyPair(argosServiceClient.getKeyPair());
+        Signature signature = Signer.sign(keyPair, properties.getPassPhrase().toCharArray(), new JsonSigningSerializer().serialize(link));
         LinkMetaBlock linkMetaBlock = LinkMetaBlock.builder().link(link).signature(signature).build();
         RestLinkMetaBlock restLinkMetaBlock = Mappers.getMapper(RestMapper.class).convertToRestLinkMetaBlock(linkMetaBlock);
         ObjectMapper objectMapper = new ObjectMapper();
@@ -62,7 +64,7 @@ class LinkRegistry {
     }
 
     private static String createFileName(String runId, String segmentName, String stepName)  {
-        Path basePath = Path.of(properties.getWorkspace());
+        Path basePath = Paths.get(properties.getWorkspace());
         return basePath.toString() +
                 "/" +
                 properties.getKeyId() + "-" +
@@ -103,13 +105,19 @@ class LinkRegistry {
         ArgosServiceClient argosServiceClient = new ArgosServiceClient(argos4jSettings, properties.getPassPhrase().toCharArray());
         RestServiceAccountKeyPair restServiceAccountKeyPair = argosServiceClient.getKeyPair();
         SignatureValidator signatureValidator = new SignatureValidator();
-        boolean signatureValid = signatureValidator
-                .isValid(linkMetaBlock.getLink(),
-                        linkMetaBlock.getSignature().getSignature(),
-                        RSAPublicKeyFactory.instance(restServiceAccountKeyPair.getPublicKey()));
-        if (!signatureValid) {
-            throw new Argos4jError("invalid signature");
+        boolean signatureValid;
+        try {
+            signatureValid = signatureValidator
+                    .isValid(linkMetaBlock.getLink(),
+                            linkMetaBlock.getSignature(),
+                            PublicKeyFactory.instance(restServiceAccountKeyPair.getPublicKey()));
+            if (!signatureValid) {
+                throw new Argos4jError("invalid signature");
+            }
+        } catch (GeneralSecurityException | IOException e) {
+            throw new Argos4jError(e.getMessage());
         }
+        
     }
 
     static void removeLink(String runId, String segmentName, String stepName)  {
