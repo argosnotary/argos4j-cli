@@ -64,9 +64,7 @@ steps:
   - name: release argos4j-cli image
     image: plugins/docker
     settings:
-      tags:
-        - ${DRONE_TAG}
-        - latest
+      auto_tag: true
       build_args:
         - VERSION=${DRONE_TAG}
       dockerfile: Dockerfile
