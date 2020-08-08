@@ -15,22 +15,17 @@
  */
 package com.rabobank.argos4j.cli;
 
+import com.rabobank.argos.argos4j.Argos4j;
 import com.rabobank.argos.argos4j.Argos4jSettings;
 import com.rabobank.argos.argos4j.FileCollector;
+import com.rabobank.argos.argos4j.LinkBuilder;
+import com.rabobank.argos.argos4j.LinkBuilderSettings;
 import com.rabobank.argos.argos4j.LocalFileCollector;
-import com.rabobank.argos.argos4j.internal.ArgosServiceClient;
-import com.rabobank.argos.argos4j.internal.ArtifactCollectorFactory;
-import com.rabobank.argos.argos4j.internal.mapper.RestMapper;
-import com.rabobank.argos.domain.crypto.ServiceAccountKeyPair;
-import com.rabobank.argos.domain.crypto.Signature;
-import com.rabobank.argos.domain.crypto.signing.JsonSigningSerializer;
-import com.rabobank.argos.domain.crypto.signing.Signer;
 import com.rabobank.argos.domain.link.Artifact;
 import com.rabobank.argos.domain.link.Link;
-import com.rabobank.argos.domain.link.LinkMetaBlock;
+
 import lombok.extern.slf4j.Slf4j;
 import org.apache.log4j.BasicConfigurator;
-import org.mapstruct.factory.Mappers;
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
@@ -38,8 +33,9 @@ import picocli.CommandLine.Option;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Collections;
+import java.security.GeneralSecurityException;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.Callable;
 
 @Command(
@@ -48,6 +44,7 @@ import java.util.concurrent.Callable;
 )
 @Slf4j
 public class PostLinkCommand implements Callable<Boolean> {
+	private static final String EXCLUDE_PATTERN = "{**.git/**,**.git\\**,**.link}";
 
     private static final String PRE = "pre";
     private static final String POST = "post";
@@ -62,7 +59,8 @@ public class PostLinkCommand implements Callable<Boolean> {
     @Option(names = {"-p", "--phase"}, description = PRE + "," + POST)
     private String phase = PRE;
 
-    private Argos4jSettings argos4jSettings;
+    private LinkBuilder linkBuilder;
+    private LinkFileHandler linkFileHandler;
 
     public static void main(String[] args) {
         BasicConfigurator.configure();
@@ -70,58 +68,45 @@ public class PostLinkCommand implements Callable<Boolean> {
     }
 
     public Boolean call() throws Exception {
-        argos4jSettings = Argos4jSettings.builder()
+    	Argos4jSettings argos4jSettings = Argos4jSettings.builder()
                 .argosServerBaseUrl(properties.getArgosServiceBaseUrl())
                 .path(properties.getPath())
                 .signingKeyId(properties.getKeyId())
                 .supplyChainName(properties.getSupplyChainName())
                 .build();
+    	LinkBuilderSettings linkBuilderSettings = LinkBuilderSettings.builder()
+        		.layoutSegmentName(layoutSegmentName)
+        		.stepName(stepName)
+        		.runId(runId)
+        		.build();
+    	Argos4j argos4j = new Argos4j(argos4jSettings);
+        linkBuilder = argos4j.getLinkBuilder(linkBuilderSettings);
+        linkFileHandler = new LinkFileHandler(argos4jSettings, linkBuilderSettings);
         if (PRE.equals(phase)) {
             createMaterials();
         } else {
-            List<Artifact> products = createProducts();
-            List<Artifact> materials = LinkRegistry.getLink(runId, layoutSegmentName, stepName)
-                    .map(Link::getMaterials)
-                    .orElse(Collections.emptyList());
-            sendLinkToArgosService(materials, products);
-            LinkRegistry.removeLink(runId, layoutSegmentName, stepName);
+        	collectProductsAndSendLinkToArgosService();
+        	linkFileHandler.removeLink();
         }
         return true;
     }
 
-    private void sendLinkToArgosService(List<Artifact> materials, List<Artifact> products) {
-        log.info("posting link to argos service ");
-        log.debug("used materials " + materials);
-        log.debug("used products " + products);
-        Link link = Link.builder().runId(runId)
-                .materials(materials)
-                .products(products)
-                .layoutSegmentName(layoutSegmentName)
-                .stepName(stepName).build();
-        ArgosServiceClient argosServiceClient = new ArgosServiceClient(argos4jSettings, properties.getPassPhrase().toCharArray());
-        ServiceAccountKeyPair keyPair = Mappers.getMapper(RestMapper.class).convertFromRestServiceAccountKeyPair(argosServiceClient.getKeyPair());
-        Signature signature = Signer.sign(keyPair, properties.getPassPhrase().toCharArray(), new JsonSigningSerializer().serialize(link));
-        argosServiceClient.uploadLinkMetaBlockToService(LinkMetaBlock.builder().link(link).signature(signature).build());
-    }
-
-    private List<Artifact> createProducts() {
+    private void collectProductsAndSendLinkToArgosService() throws IOException, GeneralSecurityException {
+        Optional<Link> optionalLink = linkFileHandler.getLink();
+    	if (optionalLink.isPresent()) {
+    	    List<Artifact> materials = optionalLink.get().getMaterials();
+    	    log.info("posting link to argos service ");
+    	    linkBuilder.addMaterials(materials);
+    	}
         FileCollector collector = createFileCollector();
-        List<Artifact> artifacts = ArtifactCollectorFactory.build(collector).collect();
-        log.info("created products ");
-        return artifacts;
+        linkBuilder.collectMaterials(collector);
+        linkBuilder.store(properties.getPassPhrase().toCharArray());
     }
-
 
     private void createMaterials() throws IOException {
         FileCollector collector = createFileCollector();
-        List<Artifact> artifacts = ArtifactCollectorFactory.build(collector).collect();
-        log.info("created materials ");
-        Link link = Link.builder()
-                .runId(runId)
-                .materials(artifacts)
-                .layoutSegmentName(layoutSegmentName)
-                .stepName(stepName).build();
-        LinkRegistry.storeLink(runId, layoutSegmentName, stepName, link);
+        linkBuilder.collectMaterials(collector);
+        linkFileHandler.storeLink(linkBuilder.create(properties.getPassPhrase().toCharArray()));
     }
 
     private FileCollector createFileCollector() {
@@ -129,7 +114,7 @@ public class PostLinkCommand implements Callable<Boolean> {
         return LocalFileCollector.builder()
                 .basePath(path)
                 .path(path)
-                .excludePatterns("{**.git/**,**.git\\**,**.link}")
+                .excludePatterns(EXCLUDE_PATTERN)
                 .build();
     }
 }
