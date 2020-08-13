@@ -44,6 +44,7 @@ class ReleaseCommandTest {
     private ArgosNotaryCli argosNotaryCli;
     private CommandLine cli;
     private String restKeyPairRest;
+    String currentDir;
 
     @SneakyThrows
     @BeforeEach
@@ -76,7 +77,7 @@ class ReleaseCommandTest {
                         "    }\n" + 
                         "}")));
         wireMockServer.stubFor(get(urlEqualTo("/api/serviceaccount/me/activekey")).willReturn(ok().withBody(restKeyPairRest)));
-
+        currentDir = new java.io.File( "." ).getCanonicalPath();
     }
     
     @Test
@@ -94,7 +95,7 @@ class ReleaseCommandTest {
             exitCode = cli.execute(
                 "-f", "./src/test/resources/release-argos-settings.json", 
                 "release", 
-                "-c", "name=local-collector,path=/home/borstg/git/argos4j-cli/src/main/resources/log4j.properties,basePath=/home/borstg/git/argos4j-cli");
+                "-c", "name=local-collector,path="+currentDir+"/src/main/resources/log4j.properties,basePath="+currentDir);
         
         } finally {
             System.setErr(oldErr);                         // teardown

@@ -21,6 +21,7 @@ import picocli.CommandLine;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import static org.hamcrest.CoreMatchers.startsWith;
@@ -30,33 +31,35 @@ import static org.hamcrest.core.Is.is;
 class ReleaseConfigMapConsumerTest {
     private CommandLine cmd;
     StringWriter sw;
+    String currentDir;
 
     @BeforeEach
-    void setUp() {
+    void setUp() throws IOException {
         cmd = new CommandLine(new ReleaseCommand());
         sw = new StringWriter();
         cmd.setErr(new PrintWriter(sw));
+        currentDir = new java.io.File( "." ).getCanonicalPath();
     }
     
     @Test
     void shouldbeOk() {
         StringWriter sw = new StringWriter();
         cmd.setErr(new PrintWriter(sw));
-        String arg = "name=local-collector,path=/home/borstg/git/argos4j-cli/src/main/resources/log4j.properties,basePath=/home/borstg/git/argos4j-cli/src/main/resources";
+        String arg = "name=local-collector,path="+currentDir+"/src/main/resources/log4j.properties,basePath="+currentDir+"/src/main/resources";
         int exitCode = cmd.execute("-c",arg);
         assertThat(exitCode, is(1));
     }
     
     @Test
     void throwIllegalArgument() {
-        String arg = "name=local-collector,path/foo=/home/borstg/git/argos4j-cli";
+        String arg = "name=local-collector,path/foo="+currentDir;
         int exitCode = cmd.execute("-c",arg);
         assertThat(exitCode, is(2));
         assertThat(sw.toString(), startsWith("IllegalArgumentException: Incorrect config map string: [name=local-collector"));
 
         sw = new StringWriter();
         cmd.setErr(new PrintWriter(sw));
-        arg = "local-collector,path/foo=/home/borstg/git/argos4j-cli";
+        arg = "local-collector,path/foo="+currentDir;
         exitCode = cmd.execute("-c",arg);
         assertThat(exitCode, is(2));
         assertThat(sw.toString(), startsWith("IllegalArgumentException: Incorrect config map string: [local-collector"));
