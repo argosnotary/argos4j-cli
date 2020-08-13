@@ -231,8 +231,8 @@
                         <configuration>
                             <programs>
                                 <program>
-                                    <mainClass>com.rabobank.argos4j.cli.PostLinkCommand</mainClass>
-                                    <id>postLink</id>
+                                    <mainClass>com.rabobank.argos4j.cli.ArgosNotaryCli</mainClass>
+                                    <id>argos-cli</id>
                                 </program>
                             </programs>
                         </configuration>

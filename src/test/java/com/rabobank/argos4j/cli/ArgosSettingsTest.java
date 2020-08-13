@@ -18,20 +18,21 @@ package com.rabobank.argos4j.cli;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 
 import static com.rabobank.argos4j.cli.EnvHelper.removeEntry;
 import static com.rabobank.argos4j.cli.EnvHelper.updateEnv;
-import static com.rabobank.argos4j.cli.Properties.ARGOS_SERVICE_BASE_URL;
-import static com.rabobank.argos4j.cli.Properties.CREDENTIALS_KEY_ID;
-import static com.rabobank.argos4j.cli.Properties.CREDENTIALS_PASSPHRASE;
-import static com.rabobank.argos4j.cli.Properties.ENV_WORKSPACE;
-import static com.rabobank.argos4j.cli.Properties.SUPPLY_CHAIN_NAME;
-import static com.rabobank.argos4j.cli.Properties.SUPPLY_CHAIN_PATH;
+import static com.rabobank.argos4j.cli.ArgosNotaryCli.ARGOS_SERVICE_BASE_URL;
+import static com.rabobank.argos4j.cli.ArgosNotaryCli.CREDENTIALS_KEY_ID;
+import static com.rabobank.argos4j.cli.ArgosNotaryCli.CREDENTIALS_PASSPHRASE;
+import static com.rabobank.argos4j.cli.link.PostLinkCommand.ENV_WORKSPACE;
+import static com.rabobank.argos4j.cli.ArgosNotaryCli.SUPPLY_CHAIN_NAME;
+import static com.rabobank.argos4j.cli.ArgosNotaryCli.SUPPLY_CHAIN_PATH;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.apache.commons.lang3.reflect.FieldUtils.writeField;
 
-class PropertiesTest {
+class ArgosSettingsTest {
+    private ArgosNotaryCli cli;
     @BeforeEach
     void setup() {
         removeEntry(ARGOS_SERVICE_BASE_URL);
@@ -40,28 +41,27 @@ class PropertiesTest {
         removeEntry(SUPPLY_CHAIN_PATH);
         removeEntry(SUPPLY_CHAIN_NAME);
         removeEntry(ENV_WORKSPACE);
-    }
-
-    private static Properties createProperties() throws NoSuchMethodException, ClassNotFoundException, IllegalAccessException, InvocationTargetException, InstantiationException {
-        Class clazz = Class.forName("com.rabobank.argos4j.cli.Properties");
-        Constructor<Properties> con = clazz.getDeclaredConstructor();
-        con.setAccessible(true);
-        return con.newInstance(null);
+        cli = new ArgosNotaryCli();
     }
 
     @Test
-    void getInstanceShouldThrowIllegalArgumentException() {
-        assertThrows(InvocationTargetException.class, () -> createProperties());
+    void getInstanceShouldThrowIllegalArgumentException() throws NoSuchMethodException, ClassNotFoundException, IllegalAccessException, InvocationTargetException, InstantiationException {
+        assertThrows(IllegalArgumentException.class, () -> cli.createSettings());
         updateEnv(ARGOS_SERVICE_BASE_URL, "http://localhost:2500/api");
-        assertThrows(InvocationTargetException.class, () -> createProperties());
+        assertThrows(IllegalArgumentException.class, () -> cli.createSettings());
         updateEnv(CREDENTIALS_PASSPHRASE, "gBM1Q4sc3kh05E");
-        assertThrows(InvocationTargetException.class, () -> createProperties());
+        assertThrows(IllegalArgumentException.class, () -> cli.createSettings());
         updateEnv(CREDENTIALS_KEY_ID, "c76bad3017abf6049a82d89eb2b5cac1ebdc1b772c26775d5032520427b8a7b3");
-        assertThrows(InvocationTargetException.class, () -> createProperties());
+        assertThrows(IllegalArgumentException.class, () -> cli.createSettings());
         updateEnv(SUPPLY_CHAIN_PATH, "root.child");
-        assertThrows(InvocationTargetException.class, () -> createProperties());
+        assertThrows(IllegalArgumentException.class, () -> cli.createSettings());
         updateEnv(SUPPLY_CHAIN_NAME, "name");
-        assertThrows(InvocationTargetException.class, () -> createProperties());
-
+        cli.createSettings();
+    }
+    
+    @Test
+    void withFileTest() throws IllegalAccessException {
+        writeField(cli, "configFile", "src/test/resources/release-argos-settings.json", true);
+        cli.createSettings();
     }
 }

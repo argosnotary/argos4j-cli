@@ -26,7 +26,7 @@ public class EnvHelper {
 
     @SuppressWarnings({"unchecked"})
     @SneakyThrows
-    static void updateEnv(String name, String val) {
+    public static void updateEnv(String name, String val) {
         Map<String, String> env = System.getenv();
         Field field = env.getClass().getDeclaredField("m");
         field.setAccessible(true);
@@ -34,7 +34,7 @@ public class EnvHelper {
     }
 
     @SneakyThrows
-    static void removeEntry(String name) {
+    public static void removeEntry(String name) {
         Map<String, String> env = System.getenv();
         Field field = env.getClass().getDeclaredField("m");
         field.setAccessible(true);

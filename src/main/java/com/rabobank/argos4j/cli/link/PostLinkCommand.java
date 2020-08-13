@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.rabobank.argos4j.cli;
+package com.rabobank.argos4j.cli.link;
 
 import com.rabobank.argos.argos4j.Argos4j;
 import com.rabobank.argos.argos4j.Argos4jSettings;
@@ -23,12 +23,12 @@ import com.rabobank.argos.argos4j.LinkBuilderSettings;
 import com.rabobank.argos.argos4j.LocalFileCollector;
 import com.rabobank.argos.domain.link.Artifact;
 import com.rabobank.argos.domain.link.Link;
+import com.rabobank.argos4j.cli.ArgosNotaryCli;
 
 import lombok.extern.slf4j.Slf4j;
-import org.apache.log4j.BasicConfigurator;
-import picocli.CommandLine;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
+import picocli.CommandLine.ParentCommand;
 
 import java.io.IOException;
 import java.nio.file.Path;
@@ -39,16 +39,19 @@ import java.util.Optional;
 import java.util.concurrent.Callable;
 
 @Command(
-        name = "argos-collector",
+        name = "postLink",
+        aliases = {"link"},
+        helpCommand = true,
         description = "collect artifacts from local workspace and send to argos service"
 )
 @Slf4j
-public class PostLinkCommand implements Callable<Boolean> {
+public class PostLinkCommand implements Callable<Integer> {
+    private Argos4jSettings settings;
 	private static final String EXCLUDE_PATTERN = "{**.git/**,**.git\\**,**.link}";
+    public static final String ENV_WORKSPACE = "WORKSPACE";
 
-    private static final String PRE = "pre";
-    private static final String POST = "post";
-    private final Properties properties = Properties.getInstance();
+    public static final String PRE = "pre";
+    public static final String POST = "post";
 
     @Option(names = {"-r", "--runId"}, description = "unique runid of the pipeline run", required = true)
     private String runId;
@@ -56,43 +59,49 @@ public class PostLinkCommand implements Callable<Boolean> {
     private String stepName;
     @Option(names = {"-ls", "--segment"}, description = "the segmentname of the wrapped pipeline step", required = true)
     private String layoutSegmentName;
+    @Option(names = {"-w", "--workspace"}, description = "the workspace of the inner command")
+    private String workspace;
     @Option(names = {"-p", "--phase"}, description = PRE + "," + POST)
     private String phase = PRE;
-
+    
     private LinkBuilder linkBuilder;
     private LinkFileHandler linkFileHandler;
+    
+    @ParentCommand
+    private ArgosNotaryCli cli;
 
-    public static void main(String[] args) {
-        BasicConfigurator.configure();
-        new CommandLine(new PostLinkCommand()).execute(args);
-    }
-
-    public Boolean call() throws Exception {
-    	Argos4jSettings argos4jSettings = Argos4jSettings.builder()
-                .argosServerBaseUrl(properties.getArgosServiceBaseUrl())
-                .path(properties.getPath())
-                .signingKeyId(properties.getKeyId())
-                .supplyChainName(properties.getSupplyChainName())
-                .build();
+    public Integer call() throws Exception {
+        settings = cli.createSettings();
+        workspace = getWorkspace();
     	LinkBuilderSettings linkBuilderSettings = LinkBuilderSettings.builder()
         		.layoutSegmentName(layoutSegmentName)
         		.stepName(stepName)
         		.runId(runId)
         		.build();
-    	Argos4j argos4j = new Argos4j(argos4jSettings);
+    	Argos4j argos4j = new Argos4j(settings);
         linkBuilder = argos4j.getLinkBuilder(linkBuilderSettings);
-        linkFileHandler = new LinkFileHandler(argos4jSettings, linkBuilderSettings);
+        linkFileHandler = new LinkFileHandler(settings, linkBuilderSettings);
         if (PRE.equals(phase)) {
             createMaterials();
         } else {
         	collectProductsAndSendLinkToArgosService();
-        	linkFileHandler.removeLink();
+        	linkFileHandler.removeLink(workspace);
         }
-        return true;
+        return 0;
+    }
+    
+    private String getWorkspace() {
+        Optional<String> opt = Optional.ofNullable(workspace);
+        if (opt.isPresent()) {
+            return opt.get();
+        } else {
+            return Optional.ofNullable(System.getenv(ENV_WORKSPACE))
+                    .orElseThrow(() -> ArgosNotaryCli.illegalArgumentException(ENV_WORKSPACE));
+        }
     }
 
     private void collectProductsAndSendLinkToArgosService() throws IOException, GeneralSecurityException {
-        Optional<Link> optionalLink = linkFileHandler.getLink();
+        Optional<Link> optionalLink = linkFileHandler.getLink(workspace);
     	if (optionalLink.isPresent()) {
     	    List<Artifact> materials = optionalLink.get().getMaterials();
     	    log.info("posting link to argos service ");
@@ -100,17 +109,17 @@ public class PostLinkCommand implements Callable<Boolean> {
     	}
         FileCollector collector = createFileCollector();
         linkBuilder.collectMaterials(collector);
-        linkBuilder.store(properties.getPassPhrase().toCharArray());
+        linkBuilder.store(settings.getKeyPassphrase().toCharArray());
     }
 
     private void createMaterials() throws IOException {
         FileCollector collector = createFileCollector();
         linkBuilder.collectMaterials(collector);
-        linkFileHandler.storeLink(linkBuilder.create(properties.getPassPhrase().toCharArray()));
+        linkFileHandler.storeLink(linkBuilder.create(settings.getKeyPassphrase().toCharArray()), workspace);
     }
 
     private FileCollector createFileCollector() {
-        Path path = Paths.get(properties.getWorkspace());
+        Path path = Paths.get(workspace);
         return LocalFileCollector.builder()
                 .basePath(path)
                 .path(path)

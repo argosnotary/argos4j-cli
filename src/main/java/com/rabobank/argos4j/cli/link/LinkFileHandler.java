@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.rabobank.argos4j.cli;
+package com.rabobank.argos4j.cli.link;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.rabobank.argos.argos4j.Argos4jError;
@@ -50,29 +50,27 @@ class LinkFileHandler {
     private final Argos4jSettings settings;
     private final LinkBuilderSettings linkBuilderSettings;
 
-    private static final Properties properties = Properties.getInstance();
-
-    public void storeLink(LinkMetaBlock linkMetaBlock) throws  IOException {
+    public void storeLink(LinkMetaBlock linkMetaBlock, String workspace) throws  IOException {
         RestLinkMetaBlock restLinkMetaBlock = Mappers.getMapper(RestMapper.class).convertToRestLinkMetaBlock(linkMetaBlock);
         ObjectMapper objectMapper = new ObjectMapper();
         String json = objectMapper.writeValueAsString(restLinkMetaBlock);
-        IOUtils.write(json, new FileOutputStream(createPath().toString()), UTF_8);
+        IOUtils.write(json, new FileOutputStream(createPath(workspace).toString()), UTF_8);
     }
     
-    private Path createPath()  {
+    private Path createPath(String workspace)  {
         List<String> fileNameList = new ArrayList<>();
-        fileNameList.add(settings.getSigningKeyId());
+        fileNameList.add(settings.getKeyId());
         fileNameList.addAll(settings.getPath());
         fileNameList.add(settings.getSupplyChainName());
         fileNameList.add(linkBuilderSettings.getRunId());
         fileNameList.add(linkBuilderSettings.getLayoutSegmentName());
         fileNameList.add(linkBuilderSettings.getStepName());
         String fileName = String.join("-", fileNameList) + ".link";
-        return Paths.get(properties.getWorkspace(), fileName);
+        return Paths.get(workspace, fileName);
     }
 
-    Optional<Link> getLink() {
-        Path filePath = createPath();
+    Optional<Link> getLink(String workspace) {
+        Path filePath = createPath(workspace);
         if (filePath.toFile().exists()) {
             RestLinkMetaBlock restLinkMetaBlock;
             try {
@@ -90,7 +88,7 @@ class LinkFileHandler {
     }
 
     private void checkSignature(LinkMetaBlock linkMetaBlock) {
-        ArgosServiceClient argosServiceClient = new ArgosServiceClient(settings, properties.getPassPhrase().toCharArray());
+        ArgosServiceClient argosServiceClient = new ArgosServiceClient(settings, settings.getKeyPassphrase().toCharArray());
         PublicKey publicKey;
         try {
             publicKey = Mappers.getMapper(RestMapper.class).convertFromRestServiceAccountKeyPair(argosServiceClient.getKeyPair()).getJavaPublicKey();
@@ -102,8 +100,8 @@ class LinkFileHandler {
         }
     }
 
-    void removeLink()  {
-        FileUtils.deleteQuietly(createPath().toFile());
+    void removeLink(String workspace)  {
+        FileUtils.deleteQuietly(createPath(workspace).toFile());
     }
 
 }
