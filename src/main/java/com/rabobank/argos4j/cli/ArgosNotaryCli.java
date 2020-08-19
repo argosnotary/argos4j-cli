@@ -29,7 +29,7 @@ import picocli.CommandLine;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
 
-@Command(name = "cli", synopsisSubcommandLabel = "(postLink | release)",
+@Command(name = "argos-cli", synopsisSubcommandLabel = "(postLink | release)",
     subcommands = {PostLinkCommand.class, ReleaseCommand.class}, mixinStandardHelpOptions = true)
 public class ArgosNotaryCli {
     public static final String ARGOS_SERVICE_BASE_URL = "ARGOS_SERVICE_BASE_URL";
