@@ -23,14 +23,10 @@ services:
     build:
       context: .
     volumes:
-      - ./workspace:/workspace/
+      - /home/borstg/git/argos-test-app:/home/argos/
     environment:
-      - WORKSPACE=/workspace
-      - ARGOS_SERVICE_BASE_URL=http://192.168.2.2:8080/api
-      - CREDENTIALS_PASSPHRASE=VCkJUYVyUimQzO
-      - CREDENTIALS_KEY_ID=f39a69bc7b4b8eaf9b2f080f3df873b5f2505320280209e05d04dade6cb2dc3f
-      - SUPPLY_CHAIN_NAME=argos-test-app
-      - SUPPLY_CHAIN_PATH=com.rabo
+      - CREDENTIALS_PASSPHRASE=80ioTPyacsS9PB
+      - CREDENTIALS_KEY_ID=4defe2208e8beaf9c7d3aba203103ff8dd88826025bdfff295ad2deefc0b9b25
     command: sleep infinity
     working_dir: /usr/local/lib/bin
     network_mode: "host"

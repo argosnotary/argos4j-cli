@@ -8,23 +8,14 @@ platform:
   arch: amd64
 
 steps:
-  - name: set version
-    image: argosnotary/argos-build:3.6.3
-    commands:
-    - mvn versions:set -DnewVersion=${DRONE_TAG:-${DRONE_BRANCH//\//_}} -DgenerateBackupPoms=false -DprocessAllModules
-    volumes:
-    - name: mvn_cache
-      path: /root/.m2/repository
-
   - name: build
     image: argosnotary/argos-build:3.6.3
     commands:
-      - mvn -q install
+    - mvn versions:set -DnewVersion=${DRONE_TAG:-${DRONE_BRANCH//\//_}} -DgenerateBackupPoms=false -DprocessAllModules
+    - mvn -q install
     volumes:
       - name: mvn_cache
         path: /root/.m2/repository
-    depends_on:
-      - set version
 
   - name: sonar
     image: argosnotary/argos-build:3.6.3
@@ -36,40 +27,12 @@ steps:
     volumes:
       - name: mvn_cache
         path: /root/.m2/repository
+    when:
+      event:
+        - push
+        - tag
     depends_on:
       - build
-
-  - name: build argos-cli docker
-    image: plugins/docker
-    settings:
-      dockerfile: Dockerfile
-      password:
-        from_secret: docker_login_token
-      repo: argosnotary/argos4j-cli-snapshot
-      tags: ${DRONE_TAG:-${DRONE_BRANCH//\//_}}
-      username:
-        from_secret: docker_login_user
-    when:
-      event:
-        - push
-    depends_on:
-        - sonar
-
-  - name: build argos-build image with argos-cli docker
-    image: plugins/docker
-    settings:
-      dockerfile: ArgosBuildWithArgosWrapper
-      password:
-        from_secret: docker_login_token
-      repo: argosnotary/argosbuild-argos4j-cli-snapshot
-      tags: ${DRONE_TAG:-${DRONE_BRANCH//\//_}}
-      username:
-        from_secret: docker_login_user
-    when:
-      event:
-        - push
-    depends_on:
-        - sonar
 
   - name: release argos4j-cli image
     image: plugins/docker
@@ -107,17 +70,20 @@ steps:
       event:
         - tag
     depends_on:
-      - release argos4j-cli image
+      - sonar
 
   - name: slack on success
     image: plugins/slack
     settings:
       webhook:
         from_secret: slack_webhook
+    when:
+      event:
+        - push
+        - tag
     depends_on:
-      - build argos-cli docker
+      - sonar
       - release argos4j-cli image
-      - build argos-build image with argos-cli docker
       - release argos-build image with argos-cli
 
 volumes:
