@@ -17,4 +17,10 @@
 FROM openjdk:11-jre-slim
 COPY target/appassembler /usr/local/argos
 RUN chmod 777 /usr/local/argos/bin/* \
-    && cd /usr/bin && ln -s /usr/local/argos/bin/postLink
+    && cd /usr/bin && ln -s /usr/local/argos/bin/argos-cli
+    
+RUN adduser --system --home /home/argos --uid 1000 argos
+
+USER argos
+
+WORKDIR /home/argos
