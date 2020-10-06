@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 - 2020 Rabobank Nederland
+ * Copyright (C) 2020 Argos Notary Coöperatie UA
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,17 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.rabobank.argos4j.cli.link;
+package com.argosnotary.argos4j.cli.link;
 
-import com.rabobank.argos.argos4j.Argos4j;
-import com.rabobank.argos.argos4j.Argos4jSettings;
-import com.rabobank.argos.argos4j.FileCollector;
-import com.rabobank.argos.argos4j.LinkBuilder;
-import com.rabobank.argos.argos4j.LinkBuilderSettings;
-import com.rabobank.argos.argos4j.LocalFileCollector;
-import com.rabobank.argos.domain.link.Artifact;
-import com.rabobank.argos.domain.link.Link;
-import com.rabobank.argos4j.cli.ArgosNotaryCli;
+import com.argosnotary.argos4j.cli.ArgosNotaryCli;
+import com.argosnotary.argos.argos4j.Argos4j;
+import com.argosnotary.argos.argos4j.Argos4jSettings;
+import com.argosnotary.argos.argos4j.FileCollector;
+import com.argosnotary.argos.argos4j.LinkBuilder;
+import com.argosnotary.argos.argos4j.LinkBuilderSettings;
+import com.argosnotary.argos.argos4j.LocalFileCollector;
+import com.argosnotary.argos.domain.link.Artifact;
+import com.argosnotary.argos.domain.link.Link;
 
 import lombok.extern.slf4j.Slf4j;
 import picocli.CommandLine.Command;

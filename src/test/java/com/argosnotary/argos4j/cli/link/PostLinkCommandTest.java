@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 - 2020 Rabobank Nederland
+ * Copyright (C) 2020 Argos Notary Coöperatie UA
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,14 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.rabobank.argos4j.cli.link;
+package com.argosnotary.argos4j.cli.link;
 
 
+import com.argosnotary.argos4j.cli.ArgosNotaryCli;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.tomakehurst.wiremock.WireMockServer;
-import com.rabobank.argos.argos4j.rest.api.model.RestKeyPair;
-import com.rabobank.argos.argos4j.rest.api.model.RestLinkMetaBlock;
-import com.rabobank.argos4j.cli.ArgosNotaryCli;
+import com.argosnotary.argos.argos4j.rest.api.model.RestKeyPair;
+import com.argosnotary.argos.argos4j.rest.api.model.RestLinkMetaBlock;
 
 import lombok.SneakyThrows;
 import picocli.CommandLine;
@@ -36,19 +36,19 @@ import java.io.StringWriter;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
+import static com.argosnotary.argos4j.cli.ArgosNotaryCli.ARGOS_SERVICE_BASE_URL;
+import static com.argosnotary.argos4j.cli.ArgosNotaryCli.CREDENTIALS_KEY_ID;
+import static com.argosnotary.argos4j.cli.ArgosNotaryCli.CREDENTIALS_PASSPHRASE;
+import static com.argosnotary.argos4j.cli.ArgosNotaryCli.SUPPLY_CHAIN_NAME;
+import static com.argosnotary.argos4j.cli.ArgosNotaryCli.SUPPLY_CHAIN_PATH;
+import static com.argosnotary.argos4j.cli.EnvHelper.removeEntry;
+import static com.argosnotary.argos4j.cli.EnvHelper.updateEnv;
+import static com.argosnotary.argos4j.cli.link.PostLinkCommand.ENV_WORKSPACE;
 import static com.github.tomakehurst.wiremock.client.WireMock.get;
 import static com.github.tomakehurst.wiremock.client.WireMock.noContent;
 import static com.github.tomakehurst.wiremock.client.WireMock.ok;
 import static com.github.tomakehurst.wiremock.client.WireMock.post;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
-import static com.rabobank.argos4j.cli.ArgosNotaryCli.ARGOS_SERVICE_BASE_URL;
-import static com.rabobank.argos4j.cli.ArgosNotaryCli.CREDENTIALS_KEY_ID;
-import static com.rabobank.argos4j.cli.ArgosNotaryCli.CREDENTIALS_PASSPHRASE;
-import static com.rabobank.argos4j.cli.link.PostLinkCommand.ENV_WORKSPACE;
-import static com.rabobank.argos4j.cli.ArgosNotaryCli.SUPPLY_CHAIN_NAME;
-import static com.rabobank.argos4j.cli.ArgosNotaryCli.SUPPLY_CHAIN_PATH;
-import static com.rabobank.argos4j.cli.EnvHelper.removeEntry;
-import static com.rabobank.argos4j.cli.EnvHelper.updateEnv;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.hamcrest.CoreMatchers.startsWith;
 import static org.hamcrest.MatcherAssert.assertThat;

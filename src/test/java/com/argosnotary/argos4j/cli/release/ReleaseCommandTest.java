@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 - 2020 Rabobank Nederland
+ * Copyright (C) 2020 Argos Notary Coöperatie UA
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,14 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.rabobank.argos4j.cli.release;
+package com.argosnotary.argos4j.cli.release;
 
 
+import com.argosnotary.argos4j.cli.ArgosNotaryCli;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.tomakehurst.wiremock.WireMockServer;
 import com.github.tomakehurst.wiremock.common.ConsoleNotifier;
-import com.rabobank.argos.argos4j.rest.api.model.RestKeyPair;
-import com.rabobank.argos4j.cli.ArgosNotaryCli;
+import com.argosnotary.argos.argos4j.rest.api.model.RestKeyPair;
 
 import lombok.SneakyThrows;
 import picocli.CommandLine;
@@ -63,7 +63,7 @@ class ReleaseCommandTest {
                         "    \"releaseDossierMetaData\": {\n" + 
                         "        \"documentId\": \"documentId\",\n" + 
                         "        \"releaseDate\": \"2020-07-30T18:35:24.00Z\",\n" + 
-                        "        \"supplyChainPath\": \"com.rabobank.argos\",\n" + 
+                        "        \"supplyChainPath\": \"com.argosnotary.argos\",\n" + 
                         "        \"releaseArtifacts\": [\n" + 
                         "            [\n" + 
                         "                \"hash1\",\n" + 
@@ -101,7 +101,7 @@ class ReleaseCommandTest {
             System.setErr(oldErr);                         // teardown
             System.setOut(oldOut);
         }
-        assertThat(out.toString(), is("Created release with data: \nDocument id: [documentId]\nSupply Chain path: [com.rabobank.argos]\nRelease date: [2020-07-30T18:35:24Z]\nArtifacts: [[[hash1, hash2], [hash3, hash4]]]")); // verify
+        assertThat(out.toString(), is("Created release with data: \nDocument id: [documentId]\nSupply Chain path: [com.argosnotary.argos]\nRelease date: [2020-07-30T18:35:24Z]\nArtifacts: [[[hash1, hash2], [hash3, hash4]]]")); // verify
         assertThat(err.toString(), is(""));
         assertThat(exitCode, is(0));
     }

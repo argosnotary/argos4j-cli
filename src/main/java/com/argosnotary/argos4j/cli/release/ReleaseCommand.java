@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 - 2020 Rabobank Nederland
+ * Copyright (C) 2020 Argos Notary Coöperatie UA
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,17 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.rabobank.argos4j.cli.release;
+package com.argosnotary.argos4j.cli.release;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.Callable;
 
-import com.rabobank.argos.argos4j.Argos4j;
-import com.rabobank.argos.argos4j.Argos4jSettings;
-import com.rabobank.argos.argos4j.ReleaseBuilder;
-import com.rabobank.argos.domain.release.ReleaseResult;
-import com.rabobank.argos4j.cli.ArgosNotaryCli;
+import com.argosnotary.argos4j.cli.ArgosNotaryCli;
+import com.argosnotary.argos.argos4j.Argos4j;
+import com.argosnotary.argos.argos4j.Argos4jSettings;
+import com.argosnotary.argos.argos4j.ReleaseBuilder;
+import com.argosnotary.argos.domain.release.ReleaseResult;
 
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;

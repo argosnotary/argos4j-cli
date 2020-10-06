@@ -24,7 +24,7 @@ The following docker environment variables can be used in any build step to conn
            CREDENTIALS_PASSPHRASE: the passphrase of the service account key configured in argosnotary.
            CREDENTIALS_KEY_ID: the keyId of the service account key configured in argosnotary.
            SUPPLY_CHAIN_NAME: your supplychain name configured in argosnotary eg "argos-test-app"
-           SUPPLY_CHAIN_PATH : the label path to your supplychain configured in argosnotary eg "com.rabobank"
+           SUPPLY_CHAIN_PATH : the label path to your supplychain configured in argosnotary eg "com.argosnotary"
            RUN_ID : bcdd4bf0245c82c060407b3b24b9b87301d15ac1
 
 Commands can then be wrapped to collect materials and products and send sent link files to argosnotary.
@@ -53,7 +53,7 @@ Complete example for drone ci:
            CREDENTIALS_KEY_ID:
              from_secret: argos-service-account-key-id
            SUPPLY_CHAIN_NAME: argos-test-app
-           SUPPLY_CHAIN_PATH : com.rabobank
+           SUPPLY_CHAIN_PATH : com.argosnotary
            DRONE_COMMIT : bcdd4bf0245c82c060407b3b24b9b87301d15ac1
          commands:
            - postLink --phase pre --segment drone --step build --runId $DRONE_COMMIT
