@@ -22,5 +22,3 @@ RUN chmod 777 /usr/local/argos/bin/* \
 RUN adduser --system --home /home/argos --uid 1000 argos
 
 USER argos
-
-WORKDIR /home/argos
