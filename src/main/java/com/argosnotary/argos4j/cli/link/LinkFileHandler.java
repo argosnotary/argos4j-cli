@@ -50,16 +50,20 @@ class LinkFileHandler {
     private final Argos4jSettings settings;
     private final LinkBuilderSettings linkBuilderSettings;
 
-    public void storeLink(LinkMetaBlock linkMetaBlock, String workspace) throws  IOException {
+    public void storeLink(LinkMetaBlock linkMetaBlock, String workspace, String qualifier) throws  IOException {
         RestLinkMetaBlock restLinkMetaBlock = Mappers.getMapper(RestMapper.class).convertToRestLinkMetaBlock(linkMetaBlock);
         ObjectMapper objectMapper = new ObjectMapper();
         String json = objectMapper.writeValueAsString(restLinkMetaBlock);
-        IOUtils.write(json, new FileOutputStream(createPath(workspace).toString()), UTF_8);
+        IOUtils.write(json, new FileOutputStream(createPath(workspace, qualifier).toString()), UTF_8);
     }
     
-    private Path createPath(String workspace)  {
+    private Path createPath(String workspace, String qualifier)  {
         List<String> fileNameList = new ArrayList<>();
-        fileNameList.add(settings.getKeyId());
+        if (qualifier == null) {
+            fileNameList.add(settings.getKeyId());
+        } else {
+            fileNameList.add(qualifier);
+        }
         fileNameList.addAll(settings.getPath());
         fileNameList.add(settings.getSupplyChainName());
         fileNameList.add(linkBuilderSettings.getRunId());
@@ -69,8 +73,8 @@ class LinkFileHandler {
         return Paths.get(workspace, fileName);
     }
 
-    Optional<Link> getLink(String workspace) {
-        Path filePath = createPath(workspace);
+    Optional<Link> getLink(String workspace, String qualifier) {
+        Path filePath = createPath(workspace, qualifier);
         if (filePath.toFile().exists()) {
             RestLinkMetaBlock restLinkMetaBlock;
             try {
@@ -100,8 +104,8 @@ class LinkFileHandler {
         }
     }
 
-    void removeLink(String workspace)  {
-        FileUtils.deleteQuietly(createPath(workspace).toFile());
+    void removeLink(String workspace, String qualifier)  {
+        FileUtils.deleteQuietly(createPath(workspace, qualifier).toFile());
     }
 
 }

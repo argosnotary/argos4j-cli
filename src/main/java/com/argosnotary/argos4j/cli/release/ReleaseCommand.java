@@ -54,7 +54,7 @@ public class ReleaseCommand implements Callable<Integer> {
         settings.getReleaseCollectors().forEach(r -> releaseBuilder.addFileCollector(r.getCollector()));
         ReleaseResult result = releaseBuilder.release(settings.getKeyPassphrase().toCharArray());
         if (!result.isReleaseIsValid()) {
-            System.out.printf("ERROR: Release is not valid");
+            System.out.println("ERROR: Release is not valid");
             return 1;
         } else {
             System.out.printf("Created release with data: \n"

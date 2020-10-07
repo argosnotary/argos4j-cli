@@ -17,7 +17,9 @@
 FROM openjdk:11-jre-slim
 COPY target/appassembler /usr/local/argos
 RUN chmod 777 /usr/local/argos/bin/* \
-    && cd /usr/bin && ln -s /usr/local/argos/bin/argos-cli
+    && cd /usr/bin && ln -s /usr/local/argos/bin/argos-cli \
+    && apt-get update \
+    && apt-get install -y jq
     
 RUN adduser --system --home /home/argos --uid 1000 argos
 

@@ -19,6 +19,7 @@ package com.argosnotary.argos4j.cli.link;
 import com.argosnotary.argos4j.cli.ArgosNotaryCli;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.tomakehurst.wiremock.WireMockServer;
+import com.argosnotary.argos.argos4j.rest.api.model.RestArtifact;
 import com.argosnotary.argos.argos4j.rest.api.model.RestKeyPair;
 import com.argosnotary.argos.argos4j.rest.api.model.RestLinkMetaBlock;
 
@@ -53,6 +54,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.hamcrest.CoreMatchers.startsWith;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.core.Is.is;
 
 class PostLinkCommandTest {
@@ -60,6 +62,9 @@ class PostLinkCommandTest {
     private ArgosNotaryCli argosNotaryCli;
     private CommandLine cli;
     private String restKeyPairRest;
+    
+    private RestArtifact artifact1;
+    private RestArtifact artifact2;
 
     @SneakyThrows
     @BeforeEach
@@ -74,6 +79,13 @@ class PostLinkCommandTest {
                 .willReturn(ok().withBody("{\"name\":\"supplyChainName\",\"id\":\"supplyChainId\",\"parentLabelId\":\"parentLabelId\"}")));
         wireMockServer.stubFor(post(urlEqualTo("/api/supplychain/supplyChainId/link")).willReturn(noContent()));
         wireMockServer.stubFor(get(urlEqualTo("/api/serviceaccount/me/activekey")).willReturn(ok().withBody(restKeyPairRest)));
+        
+        artifact1 = new RestArtifact();
+        artifact1.setHash("ed886d735b3ed7db324ddfcfa30187c3fac4182f623a79e2b8c54ebf92a38a3a");
+        artifact1.setUri("dir1/dir2/source2");
+        artifact2 = new RestArtifact();
+        artifact2.setHash("b94f6f125c79e3a5ffaa826f584c10d52ada669e6762051b826b55776d05aed2");
+        artifact2.setUri("dir1/source");
 
     }
     @AfterEach
@@ -93,17 +105,22 @@ class PostLinkCommandTest {
         setEnv();
         updateEnv(ENV_WORKSPACE, "./workspace");
         int exitCode = cli.execute(
-                "postLink", 
-                "-ls", "layoutSegmentName", 
-                "-st", "stepName", 
+                "postLink",
+                "-a", "PRE",
+                "-b", "src/test/resources/pre",
+                "-p", "src/test/resources/pre",
+                "-g", "layoutSegmentName", 
+                "-s", "stepName", 
                 "-r", "runId");
         assertThat(exitCode, is(0));
-        Path basePath = Paths.get("./workspace");
-        String file = basePath.toString() + "/c76bad3017abf6049a82d89eb2b5cac1ebdc1b772c26775d5032520427b8a7b3-root-child-supplyChainName-runId-layoutSegmentName-stepName.link";
+        Path basePath = Paths.get("src/test/resources/pre");
+        Path workspace = Paths.get("./workspace");
+        String file = workspace.toString() + "/c76bad3017abf6049a82d89eb2b5cac1ebdc1b772c26775d5032520427b8a7b3-root-child-supplyChainName-runId-layoutSegmentName-stepName.link";
         assertThat(new File(file).exists(),is(true));
         String json = IOUtils.toString(Paths.get(file).toUri(), UTF_8);
         RestLinkMetaBlock restLinkMetaBlock  = new ObjectMapper().readValue(json, RestLinkMetaBlock.class);
-        assertThat(restLinkMetaBlock.getLink().getMaterials(),hasSize(1));
+        assertThat(restLinkMetaBlock.getLink().getMaterials(),hasSize(2));
+        assertThat(restLinkMetaBlock.getLink().getMaterials(), contains(artifact1, artifact2));
     }
 
     @SneakyThrows
@@ -111,22 +128,32 @@ class PostLinkCommandTest {
     void callWithPhasePostShouldSendLinkAndRemoveFile() {
         setEnv();
         int exitCode = cli.execute(
-                "postLink", 
-                "-ls", "layoutSegmentName", 
-                "-st", "stepName", 
+                "postLink",
+                "-a", "PRE",
+                "-b", "src/test/resources/pre",
+                "-p", "src/test/resources/pre", 
+                "-g", "layoutSegmentName", 
+                "-s", "stepName", 
                 "-r", "runId",
                 "-w", "./workspace");
         assertThat(exitCode, is(0));
+        Path workspace = Paths.get("./workspace");
+        String file = workspace.toString() + "/c76bad3017abf6049a82d89eb2b5cac1ebdc1b772c26775d5032520427b8a7b3-root-child-supplyChainName-runId-layoutSegmentName-stepName.link";
+        assertThat(new File(file).exists(),is(true));
+        String json = IOUtils.toString(Paths.get(file).toUri(), UTF_8);
+        RestLinkMetaBlock restLinkMetaBlock  = new ObjectMapper().readValue(json, RestLinkMetaBlock.class);
+        assertThat(restLinkMetaBlock.getLink().getMaterials(),hasSize(2));
+        assertThat(restLinkMetaBlock.getLink().getMaterials(), contains(artifact1, artifact2));
         exitCode = cli.execute(
-                "postLink", 
-                "-ls", "layoutSegmentName", 
-                "-st", "stepName", 
+                "postLink",
+                "-a", "POST",
+                "-b", "src/test/resources/post",
+                "-p", "src/test/resources/post",
+                "-g", "layoutSegmentName", 
+                "-s", "stepName", 
                 "-r", "runId",
-                "-w", "./workspace",
-                "-p", "post");
+                "-w", "./workspace");
         assertThat(exitCode, is(0));
-        Path basePath = Paths.get("./workspace");
-        String file = basePath.toString() + "/c76bad3017abf6049a82d89eb2b5cac1ebdc1b772c26775d5032520427b8a7b3-root-child-supplyChainName-runId-layoutSegmentName-stepName.link";
         assertThat(new File(file).exists(),is(false));
     }
     
@@ -136,22 +163,34 @@ class PostLinkCommandTest {
         int exitCode = cli.execute(
                 "-f", "./src/test/resources/link-argos-settings.json", 
                 "postLink",
-                "-ls", "layoutSegmentName", 
-                "-st", "stepName", 
+                "-a", "PRE",
+                "-b", "src/test/resources/pre",
+                "-p", "src/test/resources/pre", 
+                "-g", "layoutSegmentName", 
+                "-s", "stepName", 
                 "-r", "runId",
+                "-q", "runId",
                 "-w", "./workspace");
         assertThat(exitCode, is(0));
+        Path workspace = Paths.get("./workspace");
+        String file = workspace.toString() + "/runId-root-child-supplyChainName-runId-layoutSegmentName-stepName.link";
+        assertThat(new File(file).exists(),is(true));
+        String json = IOUtils.toString(Paths.get(file).toUri(), UTF_8);
+        RestLinkMetaBlock restLinkMetaBlock  = new ObjectMapper().readValue(json, RestLinkMetaBlock.class);
+        assertThat(restLinkMetaBlock.getLink().getMaterials(),hasSize(2));
+        assertThat(restLinkMetaBlock.getLink().getMaterials(), contains(artifact1, artifact2));
         exitCode = cli.execute(
                 "-f", "./src/test/resources/link-argos-settings.json", 
-                "postLink", 
-                "-ls", "layoutSegmentName", 
-                "-st", "stepName", 
+                "postLink",
+                "-a", "POST",
+                "-b", "src/test/resources/post",
+                "-p", "src/test/resources/post", 
+                "-g", "layoutSegmentName", 
+                "-s", "stepName", 
                 "-r", "runId",
-                "-w", "./workspace", 
-                "-p", "post");
+                "-q", "runId",
+                "-w", "./workspace");
         assertThat(exitCode, is(0));
-        Path basePath = Paths.get("./workspace");
-        String file = basePath.toString() + "/c76bad3017abf6049a82d89eb2b5cac1ebdc1b772c26775d5032520427b8a7b3-root-child-supplyChainName-runId-layoutSegmentName-stepName.link";
         assertThat(new File(file).exists(),is(false));
     }
     
@@ -162,9 +201,10 @@ class PostLinkCommandTest {
         cli.setErr(new PrintWriter(sw));
         
         cli.execute(
-                    "postLink", 
-                    "-ls", "layoutSegmentName", 
-                    "-st", "stepName", 
+                    "postLink",
+                    "-a", "PRE",
+                    "-g", "layoutSegmentName", 
+                    "-s", "stepName", 
                     "-r", "runId");
         assertThat(sw.toString(), startsWith("java.lang.IllegalArgumentException: variable: WORKSPACE is required"));
     }

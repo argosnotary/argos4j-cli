@@ -31,7 +31,6 @@ import picocli.CommandLine.Option;
 import picocli.CommandLine.ParentCommand;
 
 import java.io.IOException;
-import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.security.GeneralSecurityException;
 import java.util.List;
@@ -50,19 +49,22 @@ public class PostLinkCommand implements Callable<Integer> {
 	private static final String EXCLUDE_PATTERN = "{**.git/**,**.git\\**,**.link}";
     public static final String ENV_WORKSPACE = "WORKSPACE";
 
-    public static final String PRE = "pre";
-    public static final String POST = "post";
-
     @Option(names = {"-r", "--runId"}, description = "unique runid of the pipeline run", required = true)
     private String runId;
-    @Option(names = {"-st", "--step"}, description = "the stepname of the wrapped pipeline step", required = true)
+    @Option(names = {"-s", "--step"}, description = "the stepname of the wrapped pipeline step", required = true)
     private String stepName;
-    @Option(names = {"-ls", "--segment"}, description = "the segmentname of the wrapped pipeline step", required = true)
+    @Option(names = {"-g", "--segment"}, description = "the segmentname of the wrapped pipeline step", required = true)
     private String layoutSegmentName;
     @Option(names = {"-w", "--workspace"}, description = "the workspace of the inner command")
     private String workspace;
-    @Option(names = {"-p", "--phase"}, description = PRE + "," + POST)
-    private String phase = PRE;
+    @Option(names = {"-q", "--qualifier"}, description = "first qualifier of temp link file")
+    private String qualifier;
+    @Option(names = {"-b", "--basepath"}, description = "base path from which to report artifact uri's")
+    private String basePath;
+    @Option(names = {"-p", "--path"}, description = "path to file or directory to collect")
+    private String path;
+    @Option(names = {"-a", "--phase"}, description = "${COMPLETION-CANDIDATES}", required = true)
+    private Phase phase;
     
     private LinkBuilder linkBuilder;
     private LinkFileHandler linkFileHandler;
@@ -81,11 +83,11 @@ public class PostLinkCommand implements Callable<Integer> {
     	Argos4j argos4j = new Argos4j(settings);
         linkBuilder = argos4j.getLinkBuilder(linkBuilderSettings);
         linkFileHandler = new LinkFileHandler(settings, linkBuilderSettings);
-        if (PRE.equals(phase)) {
+        if (Phase.PRE == phase) {
             createMaterials();
         } else {
         	collectProductsAndSendLinkToArgosService();
-        	linkFileHandler.removeLink(workspace);
+        	linkFileHandler.removeLink(workspace, qualifier);
         }
         return 0;
     }
@@ -101,29 +103,34 @@ public class PostLinkCommand implements Callable<Integer> {
     }
 
     private void collectProductsAndSendLinkToArgosService() throws IOException, GeneralSecurityException {
-        Optional<Link> optionalLink = linkFileHandler.getLink(workspace);
+        Optional<Link> optionalLink = linkFileHandler.getLink(workspace, qualifier);
     	if (optionalLink.isPresent()) {
     	    List<Artifact> materials = optionalLink.get().getMaterials();
     	    log.info("posting link to argos service ");
     	    linkBuilder.addMaterials(materials);
     	}
         FileCollector collector = createFileCollector();
-        linkBuilder.collectMaterials(collector);
+        linkBuilder.collectProducts(collector);
         linkBuilder.store(settings.getKeyPassphrase().toCharArray());
     }
 
     private void createMaterials() throws IOException {
         FileCollector collector = createFileCollector();
         linkBuilder.collectMaterials(collector);
-        linkFileHandler.storeLink(linkBuilder.create(settings.getKeyPassphrase().toCharArray()), workspace);
+        linkFileHandler.storeLink(linkBuilder
+                .create(settings.getKeyPassphrase().toCharArray()), workspace, qualifier);
     }
 
     private FileCollector createFileCollector() {
-        Path path = Paths.get(workspace);
         return LocalFileCollector.builder()
-                .basePath(path)
-                .path(path)
+                .basePath(Paths.get(basePath))
+                .path(Paths.get(path))
                 .excludePatterns(EXCLUDE_PATTERN)
                 .build();
+    }
+    
+    enum Phase {
+        PRE, POST
+        
     }
 }
