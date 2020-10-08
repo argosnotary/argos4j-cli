@@ -129,6 +129,8 @@ steps:
   - sonar
   - release argos4j-cli image
   - release argos-build image with argos-cli
+  - release argos-build beta image with argos-cli
+  - release argos4j-cli beta image
 
 volumes:
 - name: mvn_cache
