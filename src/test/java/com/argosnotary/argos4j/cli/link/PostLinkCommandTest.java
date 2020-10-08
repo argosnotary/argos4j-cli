@@ -17,6 +17,8 @@ package com.argosnotary.argos4j.cli.link;
 
 
 import com.argosnotary.argos4j.cli.ArgosNotaryCli;
+import com.fasterxml.jackson.core.JsonParseException;
+import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.tomakehurst.wiremock.WireMockServer;
 import com.argosnotary.argos.argos4j.rest.api.model.RestArtifact;
@@ -30,8 +32,10 @@ import org.apache.commons.io.IOUtils;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 import java.io.File;
+import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.nio.file.Path;
@@ -65,10 +69,12 @@ class PostLinkCommandTest {
     
     private RestArtifact artifact1;
     private RestArtifact artifact2;
+    
+    @TempDir
+    File workspace;
 
-    @SneakyThrows
     @BeforeEach
-    void setUp() {
+    void setUp() throws JsonParseException, JsonMappingException, IOException {
         RestKeyPair restKeyPair = new ObjectMapper().readValue(this.getClass().getResourceAsStream("/keypair.json"), RestKeyPair.class);
         restKeyPairRest = new ObjectMapper().writeValueAsString(restKeyPair);
         argosNotaryCli =  new ArgosNotaryCli();
@@ -99,11 +105,10 @@ class PostLinkCommandTest {
         removeEntry(ENV_WORKSPACE);
     }
     
-    @SneakyThrows
     @Test
-    void callWithPhasePreShouldStoreSingedLinkOnFileSystem() {
+    void callWithPhasePreShouldStoreSingedLinkOnFileSystem() throws IOException {
         setEnv();
-        updateEnv(ENV_WORKSPACE, "./workspace");
+        updateEnv(ENV_WORKSPACE, workspace.getAbsolutePath());
         int exitCode = cli.execute(
                 "postLink",
                 "-a", "PRE",
@@ -113,9 +118,7 @@ class PostLinkCommandTest {
                 "-s", "stepName", 
                 "-r", "runId");
         assertThat(exitCode, is(0));
-        Path basePath = Paths.get("src/test/resources/pre");
-        Path workspace = Paths.get("./workspace");
-        String file = workspace.toString() + "/c76bad3017abf6049a82d89eb2b5cac1ebdc1b772c26775d5032520427b8a7b3-root-child-supplyChainName-runId-layoutSegmentName-stepName.link";
+        String file = workspace.getAbsolutePath() + "/c76bad3017abf6049a82d89eb2b5cac1ebdc1b772c26775d5032520427b8a7b3-root-child-supplyChainName-runId-layoutSegmentName-stepName.link";
         assertThat(new File(file).exists(),is(true));
         String json = IOUtils.toString(Paths.get(file).toUri(), UTF_8);
         RestLinkMetaBlock restLinkMetaBlock  = new ObjectMapper().readValue(json, RestLinkMetaBlock.class);
@@ -135,10 +138,9 @@ class PostLinkCommandTest {
                 "-g", "layoutSegmentName", 
                 "-s", "stepName", 
                 "-r", "runId",
-                "-w", "./workspace");
+                "-w", workspace.getAbsolutePath());
         assertThat(exitCode, is(0));
-        Path workspace = Paths.get("./workspace");
-        String file = workspace.toString() + "/c76bad3017abf6049a82d89eb2b5cac1ebdc1b772c26775d5032520427b8a7b3-root-child-supplyChainName-runId-layoutSegmentName-stepName.link";
+        String file = workspace.getAbsolutePath() + "/c76bad3017abf6049a82d89eb2b5cac1ebdc1b772c26775d5032520427b8a7b3-root-child-supplyChainName-runId-layoutSegmentName-stepName.link";
         assertThat(new File(file).exists(),is(true));
         String json = IOUtils.toString(Paths.get(file).toUri(), UTF_8);
         RestLinkMetaBlock restLinkMetaBlock  = new ObjectMapper().readValue(json, RestLinkMetaBlock.class);
@@ -152,7 +154,7 @@ class PostLinkCommandTest {
                 "-g", "layoutSegmentName", 
                 "-s", "stepName", 
                 "-r", "runId",
-                "-w", "./workspace");
+                "-w", workspace.getAbsolutePath());
         assertThat(exitCode, is(0));
         assertThat(new File(file).exists(),is(false));
     }
@@ -170,10 +172,9 @@ class PostLinkCommandTest {
                 "-s", "stepName", 
                 "-r", "runId",
                 "-q", "runId",
-                "-w", "./workspace");
+                "-w", workspace.getAbsolutePath());
         assertThat(exitCode, is(0));
-        Path workspace = Paths.get("./workspace");
-        String file = workspace.toString() + "/runId-root-child-supplyChainName-runId-layoutSegmentName-stepName.link";
+        String file = workspace.getAbsolutePath() + "/runId-root-child-supplyChainName-runId-layoutSegmentName-stepName.link";
         assertThat(new File(file).exists(),is(true));
         String json = IOUtils.toString(Paths.get(file).toUri(), UTF_8);
         RestLinkMetaBlock restLinkMetaBlock  = new ObjectMapper().readValue(json, RestLinkMetaBlock.class);
@@ -189,7 +190,7 @@ class PostLinkCommandTest {
                 "-s", "stepName", 
                 "-r", "runId",
                 "-q", "runId",
-                "-w", "./workspace");
+                "-w", workspace.getAbsolutePath());
         assertThat(exitCode, is(0));
         assertThat(new File(file).exists(),is(false));
     }
