@@ -46,7 +46,6 @@ import java.util.concurrent.Callable;
 @Slf4j
 public class PostLinkCommand implements Callable<Integer> {
     private Argos4jSettings settings;
-	private static final String EXCLUDE_PATTERN = "{**.git/**,**.git\\**,**.link}";
     public static final String ENV_WORKSPACE = "WORKSPACE";
 
     @Option(names = {"-r", "--runId"}, description = "unique runid of the pipeline run", required = true)
@@ -125,7 +124,6 @@ public class PostLinkCommand implements Callable<Integer> {
         return LocalFileCollector.builder()
                 .basePath(Paths.get(basePath))
                 .path(Paths.get(path))
-                .excludePatterns(EXCLUDE_PATTERN)
                 .build();
     }
     
