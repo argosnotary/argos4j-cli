@@ -18,6 +18,6 @@ FROM argosnotary/argos-build:3.6.3
 
 COPY target/appassembler /usr/local/argos
 RUN chmod 777 /usr/local/argos/bin/* \
-    && cd /usr/bin && ln -s /usr/local/argos/bin/postLink
+    && cd /usr/bin && ln -s /usr/local/argos/bin/argos-cli
     
 COPY files/toolchains.xml /etc/toolchains.xml
